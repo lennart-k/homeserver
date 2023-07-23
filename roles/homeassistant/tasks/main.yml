@@ -1,0 +1,81 @@
+- name: Start Home Assistant
+  block:
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+      loop:
+        - "{{ homeassistant_data_db }}"
+        - "{{ homeassistant_data_config }}"
+
+    - name: Create bridge network
+      community.docker.docker_network:
+        name: "{{ homeassistant_network_bridge }}"
+        driver: bridge
+        state: present
+
+    - name: Start database container
+      community.docker.docker_container:
+        name: "{{ homeassistant_db_container_name }}"
+        image: "{{ homeassistant_db_image_name }}:{{ homeassistant_db_image_version }}"
+        pull: true
+        env:
+          POSTGRES_USER: "{{ homeassistant_db_user }}"
+          POSTGRES_PASSWORD: "{{ homeassistant_db_password }}"
+          POSTGRES_DB: "{{ homeassistant_db_name }}"
+        restart_policy: unless-stopped
+        volumes:
+          - "{{ homeassistant_data_db }}:/var/lib/postgresql/data"
+        networks:
+          - name: "{{ homeassistant_network_bridge }}"
+
+    - name: Start homeassistant container
+      community.docker.docker_container:
+        name: "{{ homeassistant_container_name }}"
+        image: "{{ homeassistant_image_name }}:{{ homeassistant_image_version }}"
+        pull: true
+        healthcheck:
+          test: ["CMD-SHELL", "curl -f http://localhost:8123 || exit 1"]
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ homeassistant_http_subdomain }}"
+          traefik.http.routers.homeassistant.entrypoints: "{{ traefik_http_entrypoint }}"
+          homepage.group: Home Automation
+          homepage.name: Home Assistant
+          homepage.icon: home-assistant
+          homepage.href: "https://{{ homeassistant_http_subdomain }}.{{ homeserver_domain }}"
+        expose: [8123]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ homeassistant_network_bridge }}"
+          - name: "{{ traefik_network }}"
+        volumes:
+          - "{{ homeassistant_data_config }}:/config"
+          - /etc/localtime:/etc/localtime:ro
+          - /etc/timezone:/etc/timezone:ro
+          - /run/dbus:/run/dbus:ro
+        devices:
+          - /dev/ttyUSB0
+  tags:
+    - homeassistant-start
+
+- name: Stop Home Assistant
+  block:
+    - name: Stop containers
+      community.docker.docker_container:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ homeassistant_container_name }}"
+        - "{{ homeassistant_db_container_name }}"
+
+    - name: Remove bridge network
+      community.docker.docker_network:
+        name: "{{ homeassistant_network_bridge }}"
+        state: absent
+
+  tags:
+    - homeassistant-stop
+    - stop
+    - never
