@@ -1,0 +1,31 @@
+hedgedoc_container_name: hedgedoc
+hedgedoc_image_name: quay.io/hedgedoc/hedgedoc
+hedgedoc_image_version: alpine
+
+hedgedoc_db_container_name: hedgedoc-db
+hedgedoc_db_image_name: postgres
+hedgedoc_db_image_version: 11-alpine
+
+hedgedoc_db_user: hedgedoc
+hedgedoc_db_password: hedgedoc
+hedgedoc_db_name: hedgedoc
+
+hedgedoc_data: "{{ homeserver_data }}/hedgedoc"
+hedgedoc_data_db: "{{ hedgedoc_data }}/db"
+hedgedoc_data_uploads: "{{ hedgedoc_data }}/uploads"
+
+hedgedoc_http_subdomain: hedgedoc
+
+hedgedoc_network_bridge: hedgedoc_bridge
+
+hedgedoc_oauth:
+  provider_name: ""
+  client_id: ""
+  client_secret: ""
+  client_scope: ""
+  user_profile_username_attr: ""
+  user_profile_display_name_attr: ""
+  user_profile_email_attr: ""
+  user_profile_url: ""
+  token_url: ""
+  authorization_url: ""

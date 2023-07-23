@@ -1,0 +1,91 @@
+- name: Start Gitea
+  block:
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+      loop:
+        - "{{ gitea_data_db }}"
+        - "{{ gitea_data_data }}"
+
+    - name: Create bridge network
+      community.docker.docker_network:
+        name: "{{ gitea_network_bridge }}"
+        driver: bridge
+        state: present
+
+    - name: Start database container
+      community.docker.docker_container:
+        name: "{{ gitea_db_container_name }}"
+        image: "{{ gitea_db_image_name }}:{{ gitea_db_image_version }}"
+        pull: true
+        env:
+          POSTGRES_USER: "{{ gitea_db_user }}"
+          POSTGRES_PASSWORD: "{{ gitea_db_password }}"
+          POSTGRES_DB: "{{ gitea_db_name }}"
+        restart_policy: unless-stopped
+        volumes:
+          - "{{ gitea_data_db }}:/var/lib/postgresql/data"
+        networks:
+          - name: "{{ gitea_network_bridge }}"
+
+    - name: Start gitea container
+      community.docker.docker_container:
+        name: "{{ gitea_container_name }}"
+        image: "{{ gitea_image_name }}:{{ gitea_image_version }}"
+        pull: true
+        env:
+          USER_UID: "{{ gitea_user_uid }}"
+          USER_GID: "{{ gitea_user_gid }}"
+          GITEA__database__DB_TYPE: "postgres"
+          GITEA__database__HOST: "{{ gitea_db_container_name }}:5432"
+          GITEA__database__NAME: "{{ gitea_db_name }}"
+          GITEA__database__USER: "{{ gitea_db_user }}"
+          GITEA__database__PASSWD: "{{ gitea_db_password }}"
+          GITEA__service__DISABLE_REGISTRATION: "true"
+          GITEA__server__DOMAIN: "{{ gitea_http_subdomain }}.{{ homeserver_domain }}"
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ gitea_http_subdomain }}"
+          traefik.http.routers.gitea.entrypoints: "{{ traefik_http_entrypoint }}"
+          traefik.http.services.gitea.loadbalancer.server.port: "3000"
+          traefik.http.services.gitea.loadbalancer.healthcheck.path: /
+          homepage.group: Development
+          homepage.name: Gitea
+          homepage.icon: gitea
+          homepage.href: "https://{{ gitea_http_subdomain }}.{{ homeserver_domain }}"
+        expose: [3000]
+        ports:
+          - "0.0.0.0:{{ gitea_ssh_port }}:{{ gitea_ssh_port }}"
+          - "[::0]:{{ gitea_ssh_port }}:{{ gitea_ssh_port }}"
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ gitea_network_bridge }}"
+          - name: "{{ traefik_network }}"
+        volumes:
+          - "{{ gitea_data_data }}:/data"
+          - /etc/timezone:/etc/timezone:ro
+          - /etc/localtime:/etc/localtime:ro
+  tags:
+    - gitea-start
+
+- name: Stop Gitea
+  block:
+    - name: Stop containers
+      community.docker.docker_container:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ gitea_container_name }}"
+        - "{{ gitea_db_container_name }}"
+
+    - name: Remove bridge network
+      community.docker.docker_network:
+        name: "{{ gitea_network_bridge }}"
+        state: absent
+
+  tags:
+    - gitea-stop
+    - stop
+    - never

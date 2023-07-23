@@ -1,0 +1,76 @@
+- name: Start authelia
+  block:
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+      loop:
+        - "{{ authelia_data_config }}"
+        - "{{ authelia_data_redis }}"
+
+    - name: Create bridge network
+      community.docker.docker_network:
+        name: "{{ authelia_network_bridge }}"
+        driver: bridge
+        state: present
+
+    - name: Start redis container
+      community.docker.docker_container:
+        name: "{{ authelia_redis_container_name }}"
+        image: "{{ authelia_redis_image_name }}:{{ authelia_redis_image_version }}"
+        pull: true
+        restart_policy: unless-stopped
+        volumes:
+          - "{{ authelia_data_redis }}:/data"
+        networks:
+          - name: "{{ authelia_network_bridge }}"
+
+    - name: Start authelia container
+      community.docker.docker_container:
+        name: "{{ authelia_container_name }}"
+        image: "{{ authelia_image_name }}:{{ authelia_image_version }}"
+        pull: true
+        env:
+          TZ: Europe/Berlin
+          AUTHELIA_IDENTITY_PROVIDERS_OIDC_ISSUER_PRIVATE_KEY_FILE: /config/keys/private.pem
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ authelia_http_subdomain }}"
+          traefik.http.routers.authelia.entrypoints: "{{ traefik_http_entrypoint }}"
+          traefik.http.middlewares.authelia.forwardAuth.address: "http://{{ authelia_container_name }}:9091/api/verify?rd=https%3A%2F%2F{{ authelia_http_subdomain }}.{{ homeserver_domain }}%2F"
+          traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: "true"
+          traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: "Remote-User,Remote-Groups,Remote-Name,Remote-Email"
+          homepage.group: Admin
+          homepage.name: Authelia
+          homepage.icon: authelia
+          homepage.href: "https://{{ authelia_http_subdomain }}.{{ homeserver_domain }}"
+        expose: [9091]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ authelia_network_bridge }}"
+          - name: "{{ traefik_network }}"
+        volumes:
+          - "{{ authelia_data_config }}:/config"
+  tags:
+    - authelia-start
+
+- name: Stop authelia
+  block:
+    - name: Stop containers
+      community.docker.docker_container:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ authelia_container_name }}"
+        - "{{ authelia_redis_container_name }}"
+
+    - name: Remove bridge network
+      community.docker.docker_network:
+        name: "{{ authelia_network_bridge }}"
+        state: absent
+
+  tags:
+    - authelia-stop
+    - stop
+    - never

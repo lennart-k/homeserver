@@ -1,0 +1,24 @@
+- name: Start whoami
+  community.docker.docker_container:
+    name: "{{ whoami_container_name }}"
+    image: "{{ whoami_image_name }}:{{ whoami_image_version }}"
+    pull: true
+    labels:
+      traefik.enable: "true"
+      http.subdomain: "{{ whoami_http_subdomain }}"
+      traefik.http.routers.whoami.entrypoints: "{{ traefik_http_entrypoint }}"
+    expose: [80]
+    restart_policy: unless-stopped
+    networks:
+      - name: "{{ traefik_network }}"
+  tags:
+    - whoami-start
+
+- name: Stop whoami
+  community.docker.docker_container:
+    name: "{{ whoami_container_name }}"
+    state: absent
+  tags:
+    - whoami-stop
+    - stop
+    - never

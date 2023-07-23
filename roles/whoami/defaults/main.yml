@@ -1,0 +1,5 @@
+whoami_container_name: whoami
+whoami_image_name: traefik/whoami
+whoami_image_version: latest
+
+whoami_http_subdomain: whoami

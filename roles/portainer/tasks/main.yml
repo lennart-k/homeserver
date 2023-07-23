@@ -1,0 +1,40 @@
+- name: Start Portainer
+  block:
+    - name: Create directory
+      ansible.builtin.file:
+        path: "{{ portainer_data }}"
+        state: directory
+        recurse: true
+
+    - name: Start portainer container
+      community.docker.docker_container:
+        name: "{{ portainer_container_name }}"
+        image: "{{ portainer_image_name }}:{{ portainer_image_version }}"
+        pull: true
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ portainer_http_subdomain }}"
+          traefik.http.routers.portainer.entrypoints: "{{ traefik_http_entrypoint }}"
+          traefik.http.services.portainer.loadbalancer.server.port: "9000"
+          homepage.group: Admin
+          homepage.name: Portainer
+          homepage.icon: portainer
+          homepage.href: "https://{{ portainer_http_subdomain }}.{{ homeserver_domain }}"
+        expose: [9000]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ traefik_network }}"
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+          - "{{ portainer_data }}:/data"
+  tags:
+    - portainer-start
+
+- name: Stop Portainer
+  community.docker.docker_container:
+    name: "{{ portainer_container_name }}"
+    state: absent
+  tags:
+    - portainer-stop
+    - stop
+    - never

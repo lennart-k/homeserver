@@ -1,0 +1,39 @@
+- name: Start Syncthing
+  block:
+    - name: Create directory
+      ansible.builtin.file:
+        path: "{{ syncthing_data }}"
+        owner: "{{ syncthing_user }}"
+        group: "{{ syncthing_user }}"
+        state: directory
+        recurse: true
+    - name: Start Syncthing container
+      community.docker.docker_container:
+        name: "{{ syncthing_container_name }}"
+        image: "{{ syncthing_image_name }}:{{ syncthing_image_version }}"
+        pull: true
+        user: "{{ syncthing_user }}:{{ syncthing_user }}"
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ syncthing_http_subdomain }}"
+          traefik.http.routers.syncthing.entrypoints: "{{ traefik_http_entrypoint }}"
+          homepage.group: Admin
+          homepage.name: Syncthing
+          homepage.icon: syncthing
+          homepage.href: "https://{{ syncthing_http_subdomain }}.{{ homeserver_domain }}"
+        expose: [8384]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ traefik_network }}"
+        volumes: "{{ syncthing_volumes }}"
+  tags:
+    - syncthing-start
+
+- name: Stop Syncthing
+  community.docker.docker_container:
+    name: "{{ syncthing_container_name }}"
+    state: absent
+  tags:
+    - syncthing-stop
+    - stop
+    - never

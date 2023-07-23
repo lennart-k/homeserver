@@ -1,0 +1,9 @@
+homepage_container_name: homepage
+homepage_image_name: ghcr.io/benphelps/homepage
+homepage_image_version: latest
+
+homepage_data: "{{ homeserver_data }}/homepage"
+homepage_data_config: "{{ homepage_data }}/config"
+# Homepage will create a logs folder here
+homepage_data_logs: "{{ homepage_data }}"
+homepage_http_subdomain: homepage

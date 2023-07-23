@@ -1,0 +1,12 @@
+traefik_container_name: traefik
+traefik_image_name: traefik
+traefik_image_version: v2.10
+
+traefik_data: "{{ homeserver_data }}/traefik"
+traefik_data_letsencrypt: "{{ traefik_data }}/letsencrypt"
+traefik_data_config: "{{ traefik_data }}/config"
+traefik_data_logs: "{{ traefik_data }}/logs"
+
+traefik_access_log_enabled: false
+traefik_http_entrypoint: websecure
+traefik_env: {}

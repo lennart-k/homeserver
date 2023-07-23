@@ -1,0 +1,97 @@
+- name: Start hedgedoc
+  block:
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+      loop:
+        - "{{ hedgedoc_data_db }}"
+        - "{{ hedgedoc_data_uploads }}"
+
+    - name: Create bridge network
+      community.docker.docker_network:
+        name: "{{ hedgedoc_network_bridge }}"
+        driver: bridge
+        state: present
+
+    - name: Start database container
+      community.docker.docker_container:
+        name: "{{ hedgedoc_db_container_name }}"
+        image: "{{ hedgedoc_db_image_name }}:{{ hedgedoc_db_image_version }}"
+        pull: true
+        env:
+          POSTGRES_USER: "{{ hedgedoc_db_user }}"
+          POSTGRES_PASSWORD: "{{ hedgedoc_db_password }}"
+          POSTGRES_DB: "{{ hedgedoc_db_name }}"
+        restart_policy: unless-stopped
+        volumes:
+          - "{{ hedgedoc_data_db }}:/var/lib/postgresql/data"
+        networks:
+          - name: "{{ hedgedoc_network_bridge }}"
+
+    - name: Start hedgedoc container
+      community.docker.docker_container:
+        name: "{{ hedgedoc_container_name }}"
+        image: "{{ hedgedoc_image_name }}:{{ hedgedoc_image_version }}"
+        pull: true
+        env:
+          CMD_DB_URL: "postgres://{{ hedgedoc_db_user }}:{{ hedgedoc_db_password }}@{{ hedgedoc_db_container_name }}:5432/{{ hedgedoc_db_name }}"
+          CMD_DOMAIN: "{{ hedgedoc_http_subdomain }}.{{ homeserver_domain }}"
+          CMD_PROTOCOL_USESSL: "true"
+          CMD_USECDN: "false"
+          CMD_ALLOW_GRAVATAR: "false"
+          CMD_ALLOW_ANONYMOUS: "false"
+          CMD_ALLOW_ANONYMOUS_EDITS: "true"
+          CMD_ALLOW_EMAIL_REGISTER: "false"
+          CMD_COOKIE_POLICY: strict
+          CMD_ALLOW_ORIGIN: "{{ hedgedoc_http_subdomain }}.{{ homeserver_domain }}"
+          CMD_IMAGE_UPLOAD_TYPE: filesystem
+          CMD_URL_ADDPORT: "false"
+
+          CMD_OAUTH2_PROVIDERNAME: "{{ hedgedoc_oauth.provider_name }}"
+          CMD_OAUTH2_CLIENT_ID: "{{ hedgedoc_oauth.client_id }}"
+          CMD_OAUTH2_CLIENT_SECRET: "{{ hedgedoc_oauth.client_secret }}"
+          CMD_OAUTH2_SCOPE: "{{ hedgedoc_oauth.client_scope }}"
+          CMD_OAUTH2_USER_PROFILE_USERNAME_ATTR: "{{ hedgedoc_oauth.user_profile_username_attr }}"
+          CMD_OAUTH2_USER_PROFILE_DISPLAY_NAME_ATTR: "{{ hedgedoc_oauth.user_profile_display_name_attr }}"
+          CMD_OAUTH2_USER_PROFILE_EMAIL_ATTR: "{{ hedgedoc_oauth.user_profile_email_attr }}"
+          CMD_OAUTH2_USER_PROFILE_URL: "{{ hedgedoc_oauth.user_profile_url }}"
+          CMD_OAUTH2_TOKEN_URL: "{{ hedgedoc_oauth.token_url }}"
+          CMD_OAUTH2_AUTHORIZATION_URL: "{{ hedgedoc_oauth.authorization_url }}"
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ hedgedoc_http_subdomain }}"
+          traefik.http.routers.hedgedoc.entrypoints: "{{ traefik_http_entrypoint }}"
+          homepage.group: Cloud
+          homepage.name: HedgeDoc
+          homepage.href: "https://{{ hedgedoc_http_subdomain }}.{{ homeserver_domain }}"
+        expose: [3000]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ hedgedoc_network_bridge }}"
+          - name: "{{ traefik_network }}"
+        volumes:
+          - "{{ hedgedoc_data_uploads }}:/hedgedoc/public/uploads"
+  tags:
+    - hedgedoc-start
+
+- name: Stop hedgedoc
+  block:
+    - name: Stop containers
+      community.docker.docker_container:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ hedgedoc_container_name }}"
+        - "{{ hedgedoc_db_container_name }}"
+
+    - name: Remove bridge network
+      community.docker.docker_network:
+        name: "{{ hedgedoc_network_bridge }}"
+        state: absent
+
+  tags:
+    - hedgedoc-stop
+    - stop
+    - never

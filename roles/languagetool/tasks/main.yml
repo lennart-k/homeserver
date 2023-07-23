@@ -1,0 +1,40 @@
+- name: Start languagetool
+  block:
+    - name: Create directory
+      ansible.builtin.file:
+        path: "{{ languagetool_data }}"
+        state: directory
+        recurse: true
+
+    # TODO: Automatically download ngrams
+
+    - name: Start languagetool container
+      community.docker.docker_container:
+        name: "{{ languagetool_container_name }}"
+        image: "{{ languagetool_image_name }}:{{ languagetool_image_version }}"
+        pull: true
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ languagetool_http_subdomain }}"
+          traefik.http.routers.languagetool.entrypoints: "{{ traefik_http_entrypoint }}"
+        env:
+          langtool_languageModel: /ngrams
+          Java_Xms: 256m
+          Java_Xmx: 1g
+        expose: [8010]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ traefik_network }}"
+        volumes:
+          - "{{ languagetool_data }}:/ngrams:ro"
+  tags:
+    - languagetool-start
+
+- name: Stop languagetool
+  community.docker.docker_container:
+    name: "{{ languagetool_container_name }}"
+    state: absent
+  tags:
+    - languagetool-stop
+    - stop
+    - never

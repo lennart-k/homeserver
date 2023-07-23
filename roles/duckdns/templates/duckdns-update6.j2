@@ -1,0 +1,5 @@
+#!/bin/sh
+# Installed via Ansible playbook
+IP=$(ip -6 addr show | grep "scope global dynamic" | awk '{print $2}' | rev | cut -c 4- | rev)
+echo $IP
+curl "https://www.duckdns.org/update?token={{ duckdns_token }}&ipv6=$IP&domains={{ duckdns_domains | join(',') }}&verbose=true"

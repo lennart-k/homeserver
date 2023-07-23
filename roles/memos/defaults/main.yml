@@ -1,0 +1,7 @@
+memos_container_name: memos
+memos_image_name: ghcr.io/usememos/memos
+memos_image_version: latest
+
+memos_data: "{{ homeserver_data }}/memos"
+
+memos_http_subdomain: memos

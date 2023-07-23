@@ -1,0 +1,53 @@
+- name: Setup DuckDNS
+  block:
+    - name: Install duckdns-update scripts
+      tags:
+        - duckdns-start
+      template:
+        src: "{{ item }}.j2"
+        dest: "{{ duckdns_bin_target }}/{{ item }}"
+        owner: root
+        group: root
+        mode: 0700
+      loop:
+        - duckdns-update4
+        - duckdns-update6
+
+    - name: Install services
+      tags:
+        - duckdns-start
+      template:
+        src: "{{ item }}.j2"
+        dest: "/etc/systemd/system/{{ item }}"
+        owner: root
+        group: root
+        mode: 0644
+      loop:
+        - duckdns4.service
+        - duckdns6.service
+        - duckdns4.timer
+        - duckdns6.timer
+
+    - name: Enable and start timers
+      tags:
+        - duckdns-start
+      systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - duckdns4.timer
+        - duckdns6.timer
+
+- name: Disable and stop timers
+  tags:
+    - duckdns-stop
+    - stop
+    - never
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  loop:
+    - duckdns4.timer
+    - duckdns6.timer

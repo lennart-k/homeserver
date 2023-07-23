@@ -1,0 +1,9 @@
+[Unit]
+Description=Throttles the speed of the hard drives
+
+[Service]
+ExecStart=hdparm -B {{ hdd_apm_level }} {{ hdd_apm_disks | join(' ') }}
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target

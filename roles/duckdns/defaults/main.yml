@@ -1,0 +1,6 @@
+duckdns_domains: []
+duckdns_token: secret_token, you need to set this variable!
+
+duckdns_bin_target: /usr/local/bin
+duckdns_onboot_wait: 1min
+duckdns_interval: 2min

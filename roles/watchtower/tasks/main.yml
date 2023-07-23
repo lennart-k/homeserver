@@ -1,0 +1,25 @@
+- name: Start Watchtower
+  block:
+    - name: Watchtower Docker Container
+      community.docker.docker_container:
+        name: "{{ watchtower_container_name }}"
+        image: "{{ watchtower_image_name }}:{{ watchtower_image_version }}"
+        pull: true
+        volumes:
+          - "/var/run/docker.sock:/var/run/docker.sock"
+        env:
+          TZ: "Europe/Berlin"
+          WATCHTOWER_NOTIFICATION_URL: "{{ watchtower_notification_url }}"
+        command: "{{ watchtower_command }}"
+        restart_policy: unless-stopped
+  tags:
+    - watchtower-start
+
+- name: Stop Watchtower
+  community.docker.docker_container:
+    name: "{{ watchtower_container_name }}"
+    state: absent
+  tags:
+    - watchtower-stop
+    - stop
+    - never

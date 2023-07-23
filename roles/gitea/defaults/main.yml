@@ -1,0 +1,23 @@
+gitea_container_name: gitea
+gitea_image_name: gitea/gitea
+gitea_image_version: latest
+
+gitea_db_container_name: gitea-db
+gitea_db_image_name: postgres
+gitea_db_image_version: 13-alpine
+
+gitea_user_uid: "1000"
+gitea_user_gid: "1000"
+
+gitea_db_user: gitea
+gitea_db_password: set a secure password
+gitea_db_name: gitea
+
+gitea_data: "{{ homeserver_data }}/gitea"
+gitea_data_db: "{{ gitea_data }}/db"
+gitea_data_data: "{{ gitea_data }}/data"
+
+gitea_ssh_port: 222
+gitea_http_subdomain: git
+
+gitea_network_bridge: gitea_bridge

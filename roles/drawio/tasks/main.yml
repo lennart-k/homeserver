@@ -1,0 +1,67 @@
+- name: Start draw.io
+  block:
+    - name: Create bridge network
+      community.docker.docker_network:
+        name: "{{ drawio_network_bridge }}"
+        driver: bridge
+        state: present
+
+    - name: Start drawio export server
+      community.docker.docker_container:
+        name: "{{ drawio_export_container_name }}"
+        image: "{{ drawio_export_image_name }}:{{ drawio_export_image_version }}"
+        pull: true
+        expose: [8000]
+        restart_policy: unless-stopped
+        volumes:
+          - /etc/timezone:/etc/timezone:ro
+          - /etc/localtime:/etc/localtime:ro
+        networks:
+          - name: "{{ drawio_network_bridge }}"
+
+    - name: Start drawio server
+      community.docker.docker_container:
+        name: "{{ drawio_container_name }}"
+        image: "{{ drawio_image_name }}:{{ drawio_image_version }}"
+        pull: true
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ drawio_http_subdomain }}"
+          traefik.http.routers.drawio.entrypoints: "{{ traefik_http_entrypoint }}"
+          homepage.group: Productivity
+          homepage.name: draw.io
+          homepage.icon: draw
+          homepage.href: "https://{{ drawio_http_subdomain }}.{{ homeserver_domain }}"
+        volumes:
+          - /etc/timezone:/etc/timezone:ro
+          - /etc/localtime:/etc/localtime:ro
+        env:
+          EXPORT_URL: "http://{{ drawio_export_container_name }}:8000/"
+        expose: [8080]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ drawio_network_bridge }}"
+          - name: "{{ traefik_network }}"
+
+  tags:
+    - drawio-start
+
+- name: Stop draw.io
+  block:
+    - name: Stop containers
+      community.docker.docker_container:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ drawio_container_name }}"
+        - "{{ drawio_export_container_name }}"
+
+    - name: Remove bridge network
+      community.docker.docker_network:
+        name: "{{ drawio_network_bridge }}"
+        state: absent
+
+  tags:
+    - drawio-stop
+    - stop
+    - never

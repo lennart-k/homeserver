@@ -1,0 +1,10 @@
+syncthing_container_name: syncthing
+syncthing_image_name: syncthing/syncthing
+syncthing_image_version: latest
+
+syncthing_user: "1000"
+syncthing_data: "{{ homeserver_data }}/syncthing"
+syncthing_volumes:
+  - "{{ syncthing_data }}:/var/syncthing"
+
+syncthing_http_subdomain: syncthing

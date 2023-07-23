@@ -1,0 +1,66 @@
+# when unset: 1 (true) - dont unset this, just for development
+DEBUG=0
+SQL_DEBUG=0
+
+# hosts the application can run under e.g. recipes.mydomain.com,cooking.mydomain.com,...
+ALLOWED_HOSTS=*
+
+SECRET_KEY={{ tandoor_secret_key }}
+
+# your default timezone See https://timezonedb.com/time-zones for a list of timezones
+TIMEZONE=Europe/Berlin
+
+# add only a database password if you want to run with the default postgres, otherwise change settings accordingly
+DB_ENGINE=django.db.backends.postgresql
+# DB_OPTIONS= {} # e.g. {"sslmode":"require"} to enable ssl
+POSTGRES_HOST={{ tandoor_db_container_name }}
+POSTGRES_PORT=5432
+POSTGRES_USER=djangouser
+POSTGRES_PASSWORD={{ tandoor_postgres_password }}
+POSTGRES_DB=djangodb
+
+FRACTION_PREF_DEFAULT=1
+COMMENT_PREF_DEFAULT=0
+
+# Users can set a amount of time after which the shopping list is refreshed when they are in viewing mode
+# This is the minimum interval users can set. Setting this to low will allow users to refresh very frequently which
+# might cause high load on the server. (Technically they can obviously refresh as often as they want with their own scripts)
+SHOPPING_MIN_AUTOSYNC_INTERVAL=5
+
+STICKY_NAV_PREF_DEFAULT=1
+
+# Serve mediafiles directly using gunicorn. Basically everyone recommends not doing this. Please use any of the examples
+# provided that include an additional nxginx container to handle media file serving.
+# If you know what you are doing turn this back on (1) to serve media files using djangos serve() method.
+# when unset: 1 (true) - this is temporary until an appropriate amount of time has passed for everyone to migrate
+GUNICORN_MEDIA=0
+# GUNICORN SERVER RELATED SETTINGS (see https://docs.gunicorn.org/en/stable/design.html#how-many-workers for recommended settings)
+# GUNICORN_WORKERS=1
+# GUNICORN_THREADS=1
+
+SPACE_DEFAULT_ALLOW_SHARING=1
+
+ENABLE_METRICS={{ tandoor_enable_metrics | int }}
+
+# allows you to setup OAuth providers
+# see docs for more information https://docs.tandoor.dev/features/authentication/
+SOCIAL_PROVIDERS={{ tandoor_social_providers }}
+SOCIALACCOUNT_PROVIDERS={{ tandoor_socialaccount_providers | tojson }}
+
+# Should a newly created user from a social provider get assigned to the default space and given permission by default ?
+# ATTENTION: This feature might be deprecated in favor of a space join and public viewing system in the future
+# default 0 (false), when 1 (true) users will be assigned space and group
+# SOCIAL_DEFAULT_ACCESS = 1
+
+# by default SORT_TREE_BY_NAME is disabled this will store all Keywords and Food in the order they are created
+# enabling this setting makes saving new keywords and foods very slow, which doesn't matter in most usecases.
+# however, when doing large imports of recipes that will create new objects, can increase total run time by 10-15x
+# Keywords and Food can be manually sorted by name in Admin
+# This value can also be temporarily changed in Admin, it will revert the next time the application is started
+# This will be fixed/changed in the future by changing the implementation or finding a better workaround for sorting
+# SORT_TREE_BY_NAME=0
+
+ENABLE_PDF_EXPORT=1
+
+# Recipe exports are cached for a certain time by default, adjust time if needed
+# EXPORT_FILE_CACHE_DURATION=600

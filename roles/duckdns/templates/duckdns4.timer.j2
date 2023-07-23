@@ -1,0 +1,9 @@
+[Unit]
+Description=Run duckdns-update every {{ duckdns_interval }}
+
+[Timer]
+OnBootSec={{ duckdns_onboot_wait }}
+OnUnitActiveSec={{ duckdns_interval }}
+
+[Install]
+WantedBy=timers.target

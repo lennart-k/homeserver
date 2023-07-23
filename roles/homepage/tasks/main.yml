@@ -1,0 +1,39 @@
+- name: Start Homepage
+  block:
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+      loop:
+        - "{{ homepage_data_config }}"
+        - "{{ homepage_data_logs }}"
+      
+    - name: Start Homepage container
+      community.docker.docker_container:
+        name: "{{ homepage_container_name }}"
+        image: "{{ homepage_image_name }}:{{ homepage_image_version }}"
+        pull: true
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ homepage_http_subdomain }}"
+          traefik.http.routers.homepage.entrypoints: "{{ traefik_http_entrypoint }}"
+        expose: [3000]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ traefik_network }}"
+        volumes:
+          - "{{ homepage_data_config }}:/app/config"
+          - "{{ homepage_data_logs }}:/logs"
+          - /var/run/docker.sock:/var/run/docker.sock
+  tags:
+    - homepage-start
+
+- name: Stop Homepage
+  community.docker.docker_container:
+    name: "{{ homepage_container_name }}"
+    state: absent
+  tags:
+    - homepage-stop
+    - stop
+    - never

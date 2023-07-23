@@ -1,0 +1,28 @@
+tandoor_data: "{{ homeserver_data }}/tandoor"
+
+tandoor_web_container_name: tandoor-web
+tandoor_web_image_name: vabene1111/recipes
+tandoor_web_image_version: latest
+
+tandoor_nginx_container_name: tandoor-nginx
+tandoor_nginx_image_name: nginx
+tandoor_nginx_image_version: mainline-alpine
+
+tandoor_db_container_name: tandoor-db
+tandoor_db_image_name: postgres
+tandoor_db_image_version: 11-alpine
+
+tandoor_data_db: "{{ tandoor_data }}/db"
+tandoor_data_mediafiles: "{{ tandoor_data }}/mediafiles"
+tandoor_data_staticfiles: "{{ tandoor_data }}/staticfiles"
+tandoor_data_nginx: "{{ tandoor_data }}/nginx"
+tandoor_data_env_file: "{{ tandoor_data }}/env_file"
+
+tandoor_network_bridge: tandoor_bridge
+tandoor_http_subdomain: recipes
+
+tandoor_enable_metrics: false
+tandoor_postgres_password: super_secret_password that you need to change!
+tandoor_secret_key: super_secret_key that you need to change!
+tandoor_social_providers: ''
+tandoor_socialaccount_providers: {}

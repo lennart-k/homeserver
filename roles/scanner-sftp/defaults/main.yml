@@ -1,0 +1,16 @@
+scanner_sftp_container_name: scanner_sftp
+scanner_sftp_image_name: atmoz/sftp
+scanner_sftp_image_version: latest
+
+scanner_sftp_enabled: false
+scanner_sftp_data: "{{ homeserver_data }}/scanner_sftp"
+
+scanner_sftp_user: scanner
+scanner_sftp_allow_hosts: "*"
+scanner_sftp_password: insert password hash
+scanner_sftp_uid: "1000"
+scanner_sftp_port: 2223
+
+# Include this volume when adding your own
+scanner_sftp_volumes:
+  - "{{ scanner_sftp_data }}:/etc/ssh"

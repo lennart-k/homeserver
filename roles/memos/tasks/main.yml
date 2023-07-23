@@ -1,0 +1,38 @@
+- name: Start memos
+  block:
+    - name: Create directory
+      ansible.builtin.file:
+        path: "{{ memos_data }}"
+        state: directory
+        recurse: true
+
+    - name: Start memos container
+      community.docker.docker_container:
+        name: "{{ memos_container_name }}"
+        image: "{{ memos_image_name }}:{{ memos_image_version }}"
+        pull: true
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ memos_http_subdomain }}"
+          traefik.http.routers.memos.entrypoints: "{{ traefik_http_entrypoint }}"
+          homepage.group: Cloud
+          homepage.name: Memos
+          homepage.icon: memos
+          homepage.href: "https://{{ memos_http_subdomain }}.{{ homeserver_domain }}"
+        expose: [5230]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ traefik_network }}"
+        volumes:
+          - "{{ memos_data }}:/var/opt/memos"
+  tags:
+    - memos-start
+
+- name: Stop memos
+  community.docker.docker_container:
+    name: "{{ memos_container_name }}"
+    state: absent
+  tags:
+    - memos-stop
+    - stop
+    - never

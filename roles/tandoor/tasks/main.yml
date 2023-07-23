@@ -1,0 +1,24 @@
+- include_tasks: start.yml
+  tags:
+    - tandoor-start
+
+- name: Stop Tandoor
+  block:
+    - name: Stop containers
+      community.docker.docker_container:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ tandoor_nginx_container_name }}"
+        - "{{ tandoor_web_container_name }}"
+        - "{{ tandoor_db_container_name }}"
+
+    - name: Remove bridge network
+      community.docker.docker_network:
+        name: "{{ tandoor_network_bridge }}"
+        state: absent
+
+  tags:
+    - tandoor-stop
+    - stop
+    - never

@@ -1,0 +1,91 @@
+- name: Start Tandoor
+  block:
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+      with_items:
+        - "{{ tandoor_data_db }}"
+        - "{{ tandoor_data_mediafiles }}"
+        - "{{ tandoor_data_staticfiles }}"
+        - "{{ tandoor_data_nginx }}"
+
+    - name: Copy env file to target
+      ansible.builtin.template:
+        src: env_file.j2
+        dest: "{{ tandoor_data_env_file }}"
+        owner: root
+        mode: 0644
+
+    - name: Copy nginx config directory to target
+      ansible.builtin.copy:
+        src: nginx_conf/
+        dest: "{{ tandoor_data_nginx }}"
+        owner: root
+        mode: 0644
+
+    - name: Copy nginx Recipes.conf to target
+      ansible.builtin.template:
+        src: Recipes.conf.j2
+        dest: "{{ tandoor_data_nginx }}/Recipes.conf"
+        owner: root
+        mode: 0644
+
+    - name: Create bridge network
+      community.docker.docker_network:
+        name: "{{ tandoor_network_bridge }}"
+        driver: bridge
+        state: present
+
+    - name: Start database container
+      community.docker.docker_container:
+        name: "{{ tandoor_db_container_name }}"
+        image: "{{ tandoor_db_image_name }}:{{ tandoor_db_image_version }}"
+        pull: true
+        env_file: "{{ tandoor_data_env_file }}"
+        restart_policy: unless-stopped
+        volumes:
+          - "{{ tandoor_data_db }}:/var/lib/postgresql/data"
+        networks:
+          - name: "{{ tandoor_network_bridge }}"
+
+    - name: Start Tandoor container
+      community.docker.docker_container:
+        name: "{{ tandoor_web_container_name }}"
+        image: "{{ tandoor_web_image_name }}:{{ tandoor_web_image_version }}"
+        pull: true
+        env_file: "{{ tandoor_data_env_file }}"
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ tandoor_network_bridge }}"
+        volumes:
+          - "{{ tandoor_data_staticfiles }}:/opt/recipes/staticfiles"
+          - "{{ tandoor_data_mediafiles }}:/opt/recipes/mediafiles"
+
+    - name: Start nginx container
+      community.docker.docker_container:
+        name: "{{ tandoor_nginx_container_name }}"
+        image: "{{ tandoor_nginx_image_name }}:{{ tandoor_nginx_image_version }}"
+        pull: true
+        env_file: "{{ tandoor_data_env_file }}"
+        restart_policy: unless-stopped
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ tandoor_http_subdomain }}"
+          traefik.http.routers.tandoor.entrypoints: "{{ traefik_http_entrypoint }}"
+          homepage.group: Cloud
+          homepage.name: Tandoor Recipes
+          homepage.icon: tandoorrecipes
+          homepage.href: "https://{{ tandoor_http_subdomain }}.{{ homeserver_domain }}"
+        networks:
+          - name: "{{ traefik_network }}"
+          - name: "{{ tandoor_network_bridge }}"
+        expose:
+          - 80
+        volumes:
+          - "{{ tandoor_data_staticfiles }}:/static:ro"
+          - "{{ tandoor_data_nginx }}:/etc/nginx/conf.d:ro"
+          - "{{ tandoor_data_mediafiles }}:/media:ro"
+  tags:
+    - tandoor-start

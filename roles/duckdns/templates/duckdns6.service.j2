@@ -1,0 +1,6 @@
+[Unit]
+Description=Updates the DuckDNS IPv6 entry
+
+[Service]
+Type=oneshot
+ExecStart={{ duckdns_bin_target }}/duckdns-update6

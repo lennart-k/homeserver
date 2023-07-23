@@ -1,0 +1,7 @@
+portainer_container_name: portainer
+portainer_image_name: portainer/portainer-ce
+portainer_image_version: latest
+
+portainer_data: "{{ homeserver_data }}/portainer"
+
+portainer_http_subdomain: portainer

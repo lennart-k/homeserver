@@ -1,0 +1,18 @@
+authelia_container_name: authelia
+authelia_image_name: authelia/authelia
+authelia_image_version: latest
+
+authelia_redis_container_name: authelia-redis
+authelia_redis_image_name: redis
+authelia_redis_image_version: alpine
+
+authelia_redis_user: authelia
+authelia_redis_password: authelia
+authelia_redis_name: authelia
+
+authelia_data: "{{ homeserver_data }}/authelia"
+authelia_data_config: "{{ authelia_data }}/config"
+authelia_data_redis: "{{ authelia_data }}/redis"
+
+authelia_http_subdomain: auth
+authelia_network_bridge: authelia_bridge

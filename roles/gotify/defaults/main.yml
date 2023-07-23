@@ -1,0 +1,7 @@
+gotify_container_name: gotify
+gotify_image_name: ghcr.io/gotify/server
+gotify_image_version: latest
+
+gotify_data: "{{ homeserver_data }}/gotify"
+
+gotify_http_subdomain: gotify

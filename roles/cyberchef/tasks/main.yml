@@ -1,0 +1,27 @@
+- name: Start Cyberchef
+  community.docker.docker_container:
+    name: "{{ cyberchef_container_name }}"
+    image: "{{ cyberchef_image_name }}:{{ cyberchef_image_version }}"
+    pull: true
+    labels:
+      traefik.enable: "true"
+      http.subdomain: "{{ cyberchef_http_subdomain }}"
+      traefik.http.routers.cyberchef.entrypoints: "{{ traefik_http_entrypoint }}"
+      homepage.group: Productivity
+      homepage.name: Cyberchef
+      homepage.href: "https://{{ cyberchef_http_subdomain }}.{{ homeserver_domain }}"
+    expose: [80]
+    restart_policy: unless-stopped
+    networks:
+      - name: "{{ traefik_network }}"
+  tags:
+    - cyberchef-start
+
+- name: Stop Cyberchef
+  community.docker.docker_container:
+    name: "{{ cyberchef_container_name }}"
+    state: absent
+  tags:
+    - cyberchef-stop
+    - stop
+    - never

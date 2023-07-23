@@ -1,0 +1,6 @@
+languagetool_container_name: languagetool
+languagetool_image_name: erikvl87/languagetool
+languagetool_image_version: latest
+
+languagetool_data: "{{ homeserver_data }}/languagetool"
+languagetool_http_subdomain: languagetool

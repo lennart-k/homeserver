@@ -1,0 +1,39 @@
+- name: Start Gotify
+  block:
+    - name: Create directory
+      ansible.builtin.file:
+        path: "{{ gotify_data }}"
+        state: directory
+        recurse: true
+
+    - name: Start gotify container
+      community.docker.docker_container:
+        name: "{{ gotify_container_name }}"
+        image: "{{ gotify_image_name }}:{{ gotify_image_version }}"
+        pull: true
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ gotify_http_subdomain }}"
+          traefik.http.routers.gotify.entrypoints: "{{ traefik_http_entrypoint }}"
+          homepage.group: Productivity
+          homepage.name: Gotify
+          homepage.href: "https://{{ gotify_http_subdomain }}.{{ homeserver_domain }}"
+        expose: [80]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ traefik_network }}"
+        env:
+          TZ: Europe/Berlin
+        volumes:
+          - "{{ gotify_data }}:/app/data"
+  tags:
+    - gotify-start
+
+- name: Stop Gotify
+  community.docker.docker_container:
+    name: "{{ gotify_container_name }}"
+    state: absent
+  tags:
+    - gotify-stop
+    - stop
+    - never

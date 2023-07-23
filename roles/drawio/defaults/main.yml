@@ -1,0 +1,10 @@
+drawio_container_name: drawio
+drawio_image_name: jgraph/drawio
+drawio_image_version: latest
+
+drawio_export_container_name: drawio-export
+drawio_export_image_name: jgraph/export-server
+drawio_export_image_version: latest
+
+drawio_network_bridge: drawio_bridge
+drawio_http_subdomain: drawio
