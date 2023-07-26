@@ -1,0 +1,9 @@
+adguard_container_name: adguard
+adguard_image_name: adguard/adguardhome
+adguard_image_version: latest
+
+adguard_data: "{{ homeserver_data }}/adguard"
+adguard_data_data: "{{ adguard_data }}/data"
+adguard_data_config: "{{ adguard_data }}/config"
+
+adguard_http_subdomain: adguard.internal

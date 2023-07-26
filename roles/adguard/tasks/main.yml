@@ -1,0 +1,49 @@
+- name: Start AdGuard
+  block:
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+      loop:
+        - "{{ adguard_data_data }}"
+        - "{{ adguard_data_config }}"
+
+    - name: Start adguard container
+      community.docker.docker_container:
+        name: "{{ adguard_container_name }}"
+        image: "{{ adguard_image_name }}:{{ adguard_image_version }}"
+        pull: true
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ adguard_http_subdomain }}"
+          traefik.http.routers.adguard.entrypoints: "{{ traefik_http_entrypoint }}"
+          traefik.http.services.adguard.loadbalancer.server.port: "3000"
+          traefik.http.services.adguard.loadbalancer.healthcheck.path: /
+          homepage.group: Admin
+          homepage.name: AdGuard
+          homepage.href: "https://{{ adguard_http_subdomain }}.{{ homeserver_domain }}"
+        expose: [3000]
+        ports:
+          - 53:53/tcp  # plain DNS
+          - 53:53/udp  # plain DNS
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ traefik_network }}"
+        env:
+          TZ: Europe/Berlin
+        volumes:
+          - "{{ adguard_data_data }}:/opt/adguardhome/work"
+          - "{{ adguard_data_config }}:/opt/adguardhome/conf"
+
+  tags:
+    - adguard-start
+
+- name: Stop AdGuard
+  community.docker.docker_container:
+    name: "{{ adguard_container_name }}"
+    state: absent
+  tags:
+    - adguard-stop
+    - stop
+    - never
