@@ -1,0 +1,24 @@
+- name: Start Node exporter
+  community.docker.docker_container:
+    name: "{{ node_exporter_container_name }}"
+    image: "{{ node_exporter_image_name }}:{{ node_exporter_image_version }}"
+    pull: true
+    command:
+      - '--path.rootfs=/host'
+    expose: [9100]
+    restart_policy: unless-stopped
+    networks:
+      - name: "{{ traefik_network }}"
+    volumes:
+      - '/:/host:ro,rslave'
+  tags:
+    - node-exporter-start
+
+- name: Stop Node exporter
+  community.docker.docker_container:
+    name: "{{ node_exporter_container_name }}"
+    state: absent
+  tags:
+    - node-exporter-stop
+    - stop
+    - never
