@@ -1,0 +1,9 @@
+grafana_container_name: grafana
+grafana_image_name: grafana/grafana
+grafana_image_version: latest
+
+grafana_data: "{{ homeserver_data }}/grafana"
+grafana_data_data: "{{ grafana_data }}/data"
+grafana_data_config: "{{ grafana_data }}/config"
+
+grafana_http_subdomain: grafana

@@ -1,0 +1,45 @@
+- name: Start Grafana
+  block:
+    - name: Create directory
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: 472  # Grafana user
+        group: 472
+        recurse: true
+      loop:
+        - "{{ grafana_data_data }}"
+        - "{{ grafana_data_config }}"
+
+    - name: Start grafana container
+      community.docker.docker_container:
+        name: "{{ grafana_container_name }}"
+        image: "{{ grafana_image_name }}:{{ grafana_image_version }}"
+        pull: true
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ grafana_http_subdomain }}"
+          traefik.http.routers.grafana.entrypoints: "{{ traefik_http_entrypoint }}"
+          homepage.group: Admin
+          homepage.name: Grafana
+          homepage.href: "https://{{ grafana_http_subdomain }}.{{ homeserver_domain }}"
+        expose: [3000]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ traefik_network }}"
+        env:
+          TZ: Europe/Berlin
+        volumes:
+          - "{{ grafana_data_data }}:/var/lib/grafana"
+          - "{{ grafana_data_config }}:/etc/grafana"
+  tags:
+    - grafana-start
+
+- name: Stop Grafana
+  community.docker.docker_container:
+    name: "{{ grafana_container_name }}"
+    state: absent
+  tags:
+    - grafana-stop
+    - stop
+    - never
