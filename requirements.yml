@@ -1,0 +1,11 @@
+---
+roles:
+  - name: geerlingguy.security
+    version: 2.2.0
+  - name: geerlingguy.docker
+    version: 6.1.0
+
+collections:
+  - name: ansible.posix
+  - name: community.docker
+  - name: community.general
