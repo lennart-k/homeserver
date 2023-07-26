@@ -12,6 +12,8 @@
     - name: Create bridge network
       community.docker.docker_network:
         name: "{{ hedgedoc_network_bridge }}"
+        driver_options:
+          com.docker.network.bridge.name: "{{ hedgedoc_network_bridge }}"
         driver: bridge
         state: present
 

@@ -12,6 +12,8 @@
     - name: Create bridge network
       community.docker.docker_network:
         name: "{{ homeassistant_network_bridge }}"
+        driver_options:
+          com.docker.network.bridge.name: "{{ homeassistant_network_bridge }}"
         driver: bridge
         state: present
 
@@ -56,7 +58,8 @@
           - /etc/timezone:/etc/timezone:ro
           - /run/dbus:/run/dbus:ro
         devices:
-          - /dev/ttyUSB0
+          - /dev/serial/by-id/pci-Silicon_Labs_slae.sh_cc2652rb_stick_-_slaesh_s_iot_stuff_00_12_4B_00_23_93_23_EB-if00-port0
+          # - /dev/ttyUSB0
   tags:
     - homeassistant-start
 

@@ -15,4 +15,4 @@ homeassistant_data_db: "{{ homeassistant_data }}/db"
 homeassistant_data_config: "{{ homeassistant_data }}/config"
 
 homeassistant_http_subdomain: home
-homeassistant_network_bridge: homeassistant_bridge
+homeassistant_network_bridge: hass_bridge
