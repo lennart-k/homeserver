@@ -1,0 +1,9 @@
+prometheus_container_name: prometheus
+prometheus_image_name: prom/prometheus
+prometheus_image_version: latest
+
+prometheus_data: "{{ homeserver_data }}/prometheus"
+prometheus_data_data: "{{ prometheus_data }}/data"
+prometheus_data_config: "{{ prometheus_data }}/config"
+
+prometheus_http_subdomain: prometheus
