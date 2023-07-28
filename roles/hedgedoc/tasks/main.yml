@@ -67,6 +67,7 @@
           traefik.http.routers.hedgedoc.entrypoints: "{{ traefik_http_entrypoint }}"
           homepage.group: Cloud
           homepage.name: HedgeDoc
+          homepage.icon: codimd
           homepage.href: "https://{{ hedgedoc_http_subdomain }}.{{ homeserver_domain }}"
         expose: [3000]
         restart_policy: unless-stopped

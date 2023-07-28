@@ -9,6 +9,7 @@
       traefik.http.routers.cyberchef.entrypoints: "{{ traefik_http_entrypoint }}"
       homepage.group: Productivity
       homepage.name: Cyberchef
+      homepage.icon: cyberchef
       homepage.href: "https://{{ cyberchef_http_subdomain }}.{{ homeserver_domain }}"
     expose: [80]
     restart_policy: unless-stopped

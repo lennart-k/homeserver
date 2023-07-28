@@ -22,6 +22,7 @@
           traefik.http.routers.grafana.entrypoints: "{{ traefik_http_entrypoint }}"
           homepage.group: Admin
           homepage.name: Grafana
+          homepage.icon: grafana
           homepage.href: "https://{{ grafana_http_subdomain }}.{{ homeserver_domain }}"
         expose: [3000]
         restart_policy: unless-stopped

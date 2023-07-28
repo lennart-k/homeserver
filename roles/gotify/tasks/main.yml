@@ -17,6 +17,7 @@
           traefik.http.routers.gotify.entrypoints: "{{ traefik_http_entrypoint }}"
           homepage.group: Productivity
           homepage.name: Gotify
+          homepage.icon: gotify
           homepage.href: "https://{{ gotify_http_subdomain }}.{{ homeserver_domain }}"
         expose: [80]
         restart_policy: unless-stopped
