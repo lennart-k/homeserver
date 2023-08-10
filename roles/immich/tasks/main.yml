@@ -1,0 +1,182 @@
+- name: Start Immich
+  block:
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+      loop:
+        - "{{ immich_data_upload }}"
+        - "{{ immich_data_db }}"
+        - "{{ immich_data_ml_cache }}"
+        - "{{ immich_data_typesense_data }}"
+
+    - name: Create bridge network
+      community.docker.docker_network:
+        name: "{{ immich_network_bridge }}"
+        driver_options:
+          com.docker.network.bridge.name: "{{ immich_network_bridge }}"
+        driver: bridge
+        state: present
+
+    - name: Create Typesense container
+      community.docker.docker_container:
+        name: "{{ immich_typesense_container_name }}"
+        image: "{{ immich_typesense_image_name }}:{{ immich_typesense_image_version }}"
+        pull: true
+        env:
+          TYPESENSE_API_KEY: "{{ immich_typesense_api_key }}"
+          TYPESENSE_DATA_DIR: "/data"
+        restart_policy: unless-stopped
+        volumes:
+          - "{{ immich_data_typesense_data }}:/data"
+        networks:
+          - name: "{{ immich_network_bridge }}"
+
+    - name: Create Redis container
+      community.docker.docker_container:
+        name: "{{ immich_redis_container_name }}"
+        image: "{{ immich_redis_image_name }}:{{ immich_redis_image_version }}"
+        pull: true
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ immich_network_bridge }}"
+
+    - name: Start database container
+      community.docker.docker_container:
+        name: "{{ immich_db_container_name }}"
+        image: "{{ immich_db_image_name }}:{{ immich_db_image_version }}"
+        pull: true
+        env:
+          POSTGRES_USER: "{{ immich_db_username }}"
+          POSTGRES_PASSWORD: "{{ immich_db_password }}"
+          POSTGRES_DB: "{{ immich_db_database }}"
+        restart_policy: unless-stopped
+        volumes:
+          - "{{ immich_data_db }}:/var/lib/postgresql/data"
+        networks:
+          - name: "{{ immich_network_bridge }}"
+
+    - name: Start machine learning container
+      community.docker.docker_container:
+        name: "{{ immich_ml_container_name }}"
+        image: "{{ immich_ml_image_name }}:{{ immich_ml_image_version }}"
+        pull: true
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ immich_network_bridge }}"
+        volumes:
+          - "{{ immich_data_ml_cache }}:/cache"
+
+    - name: Start Immich server container
+      community.docker.docker_container:
+        name: "{{ immich_server_container_name }}"
+        image: "{{ immich_server_image_name }}:{{ immich_server_image_version }}"
+        pull: true
+        command: ["./start-server.sh"]
+        restart_policy: unless-stopped
+        env:
+          LOG_LEVEL: "{{ immich_general_log_level }}"
+          IMMICH_MACHINE_LEARNING_URL: "http://{{ immich_ml_container_name }}:3003"
+          IMMICH_MEDIA_LOCATION: /usr/src/app/upload
+          DB_HOSTNAME: "{{ immich_db_container_name }}"
+          DB_USERNAME: "{{ immich_db_username }}"
+          DB_PASSWORD: "{{ immich_db_password }}"
+          DB_DATABASE_NAME: "{{ immich_db_database }}"
+          REDIS_HOSTNAME: "{{ immich_redis_container_name }}"
+          TYPESENSE_ENABLED: "{{ immich_typesense_enabled }}"
+          TYPESENSE_HOST: "{{ immich_typesense_container_name }}"
+          TYPESENSE_API_KEY: "{{ immich_typesense_api_key }}"
+        networks:
+          - name: "{{ immich_network_bridge }}"
+        volumes:
+          - "{{ immich_data_upload }}:/usr/src/app/upload"
+
+    - name: Start Immich microservices container
+      community.docker.docker_container:
+        name: "{{ immich_microservices_container_name }}"
+        image: "{{ immich_microservices_image_name }}:{{ immich_microservices_image_version }}"
+        pull: true
+        command: ["./start-microservices.sh"]
+        restart_policy: unless-stopped
+        env:
+          TZ: "{{ immich_general_tz }}"
+          LOG_LEVEL: "{{ immich_general_log_level }}"
+          IMMICH_MACHINE_LEARNING_URL: "http://{{ immich_ml_container_name }}:3003"
+          IMMICH_MEDIA_LOCATION: /usr/src/app/upload
+          DISABLE_REVERSE_GEOCODING: "{{ immich_geocoding_disable_reverse_geocoding }}"
+          REVERSE_GEOCODING_PRECISION: "{{ immich_geocoding_reverse_geocoding_precision }}"
+          DB_HOSTNAME: "{{ immich_db_container_name }}"
+          DB_USERNAME: "{{ immich_db_username }}"
+          DB_PASSWORD: "{{ immich_db_password }}"
+          DB_DATABASE_NAME: "{{ immich_db_database }}"
+          REDIS_HOSTNAME: "{{ immich_redis_container_name }}"
+          TYPESENSE_ENABLED: "{{ immich_typesense_enabled }}"
+          TYPESENSE_HOST: "{{ immich_typesense_container_name }}"
+          TYPESENSE_API_KEY: "{{ immich_typesense_api_key }}"
+        networks:
+          - name: "{{ immich_network_bridge }}"
+        volumes:
+          - "{{ immich_data_upload }}:/usr/src/app/upload"
+
+    - name: Start Immich web container
+      community.docker.docker_container:
+        name: "{{ immich_web_container_name }}"
+        image: "{{ immich_web_image_name }}:{{ immich_web_image_version }}"
+        pull: true
+        restart_policy: unless-stopped
+        env:
+          IMMICH_SERVER_URL: "http://{{ immich_server_container_name }}:3001"
+          PUBLIC_LOGIN_PAGE_MESSAGE: "{{ immich_general_public_login_page_message }}"
+        networks:
+          - name: "{{ immich_network_bridge }}"
+
+    - name: Start Immich proxy container
+      community.docker.docker_container:
+        name: "{{ immich_proxy_container_name }}"
+        image: "{{ immich_proxy_image_name }}:{{ immich_proxy_image_version }}"
+        pull: true
+        restart_policy: unless-stopped
+        expose: [8080]
+        env:
+          IMMICH_WEB_URL: "http://{{ immich_web_container_name }}:3000"
+          IMMICH_SERVER_URL: "http://{{ immich_server_container_name }}:3001"
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ immich_http_subdomain }}"
+          traefik.http.routers.immich.entrypoints: "{{ traefik_http_entrypoint }}"
+          homepage.group: Cloud
+          homepage.name: Immich
+          homepage.icon: immich
+          homepage.href: "https://{{ immich_http_subdomain }}.{{ homeserver_domain }}"
+        networks:
+          - name: "{{ immich_network_bridge }}"
+          - name: "{{ traefik_network }}"
+  tags:
+    - immich-start
+
+- name: Stop immich
+  block:
+    - name: Stop containers
+      community.docker.docker_container:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ immich_proxy_container_name }}"
+        - "{{ immich_web_container_name }}"
+        - "{{ immich_microservices_container_name }}"
+        - "{{ immich_server_container_name }}"
+        - "{{ immich_ml_container_name }}"
+        - "{{ immich_db_container_name }}"
+        - "{{ immich_redis_container_name }}"
+        - "{{ immich_typesense_container_name }}"
+
+    - name: Remove bridge network
+      community.docker.docker_network:
+        name: "{{ immich_network_bridge }}"
+        state: absent
+
+  tags:
+    - immich-stop
+    - stop
+    - never

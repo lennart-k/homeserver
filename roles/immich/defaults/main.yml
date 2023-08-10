@@ -1,0 +1,68 @@
+immich_image_version: release
+
+# Database for search
+immich_typesense_container_name: immich-typesense
+immich_typesense_image_name: typesense/typesense
+immich_typesense_image_version: "0.24.1"
+
+# Queue management for immich_microservices
+immich_redis_container_name: immich-redis
+immich_redis_image_name: redis
+immich_redis_image_version: "6.2"
+
+# persistent data
+immich_db_container_name: immich-db
+immich_db_image_name: postgres
+immich_db_image_version: 14
+
+# Run Machine Learning models
+immich_ml_container_name: immich-machine_learning
+immich_ml_image_name: ghcr.io/immich-app/immich-machine-learning
+immich_ml_image_version: "{{ immich_image_version }}"
+
+# Handles REST API requests
+immich_server_container_name: immich-server
+immich_server_image_name: ghcr.io/immich-app/immich-server
+immich_server_image_version: "{{ immich_image_version }}"
+
+# Run background jobs
+immich_microservices_container_name: immich-microservices
+immich_microservices_image_name: "{{ immich_server_image_name }}"
+immich_microservices_image_version: "{{ immich_image_version }}"
+
+# Host the frontend?
+immich_web_container_name: immich-web
+immich_web_image_name: ghcr.io/immich-app/immich-web
+immich_web_image_version: "{{ immich_image_version }}"
+
+# route HTTP requests
+# TODO: Remove this proxy container
+immich_proxy_container_name: immich-proxy
+immich_proxy_image_name: ghcr.io/immich-app/immich-proxy
+immich_proxy_image_version: "{{ immich_image_version }}"
+
+# Immich config environment variables
+# see https://immich.app/docs/install/environment-variables
+immich_general_tz: Europe/Berlin  # microservices
+immich_general_log_level: log  # server, microservices
+immich_general_public_login_page_message: ""  # web
+
+immich_geocoding_disable_reverse_geocoding: "false"  # microservices
+immich_geocoding_reverse_geocoding_precision: "3"  # microservices
+
+immich_db_username: immich  # server, microservices
+immich_db_password: supersecretpassword  # server, microservices
+immich_db_database: immich  # server, microservices
+
+immich_typesense_enabled: "true"  # server, microservices
+immich_typesense_api_key: supersecretkey  # server, microservices, typesense
+
+immich_data: "{{ homeserver_data }}/immich"
+immich_data_upload: "{{ immich_data }}/upload"
+immich_data_db: "{{ immich_data }}/db"
+immich_data_ml_cache: "{{ immich_data }}/ml_cache"
+immich_data_typesense_data: "{{ immich_data }}/typesense_data"
+
+immich_http_subdomain: immich
+
+immich_network_bridge: immich_bridge
