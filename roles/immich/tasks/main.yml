@@ -8,6 +8,7 @@
       loop:
         - "{{ immich_data_upload }}"
         - "{{ immich_data_db }}"
+        - "{{ immich_data_redis }}"
         - "{{ immich_data_ml_cache }}"
         - "{{ immich_data_typesense_data }}"
 
@@ -41,6 +42,8 @@
         restart_policy: unless-stopped
         networks:
           - name: "{{ immich_network_bridge }}"
+        volumes:
+          - "{{ immich_data_redis }}:/data"
 
     - name: Start database container
       community.docker.docker_container:

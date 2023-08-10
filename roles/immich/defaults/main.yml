@@ -60,6 +60,7 @@ immich_typesense_api_key: supersecretkey  # server, microservices, typesense
 immich_data: "{{ homeserver_data }}/immich"
 immich_data_upload: "{{ immich_data }}/upload"
 immich_data_db: "{{ immich_data }}/db"
+immich_data_redis: "{{ immich_data }}/redis"
 immich_data_ml_cache: "{{ immich_data }}/ml_cache"
 immich_data_typesense_data: "{{ immich_data }}/typesense_data"
 
