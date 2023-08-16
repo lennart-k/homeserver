@@ -15,6 +15,7 @@
       ansible.builtin.template:
         src: traefik.yml
         dest: "{{ traefik_data_config }}/traefik.yml"
+        # Default delimeters interfere with Go's tempating engine :/
         variable_start_string: "[%"
         variable_end_string: "%]"
 
