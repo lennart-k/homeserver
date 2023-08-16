@@ -8,6 +8,7 @@
       loop:
         - "{{ traefik_data_letsencrypt }}"
         - "{{ traefik_data_config }}"
+        - "{{ traefik_data_config }}/dynamic"
         - "{{ traefik_data_logs }}"
     
     - name: Install traefik.yml
