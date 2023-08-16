@@ -1,0 +1,10 @@
+- name: Create bridge network for all exposed services
+  community.docker.docker_network:
+    name: "{{ homeserver_services_network }}"
+    driver_options:
+      com.docker.network.bridge.name: "hs_{{ homeserver_services_network }}"
+    driver: bridge
+    state: present
+  tags:
+    - services-network
+
