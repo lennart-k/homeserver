@@ -23,7 +23,7 @@
         expose: [9000]
         restart_policy: unless-stopped
         networks:
-          - name: "{{ traefik_network }}"
+          - name: "{{ homeserver_services_network }}"
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
           - "{{ portainer_data }}:/data"

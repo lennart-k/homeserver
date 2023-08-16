@@ -1,0 +1,30 @@
+nextcloud_container_name: nextcloud
+nextcloud_image_name: quay.io/nextcloud/nextcloud
+nextcloud_image_version: alpine
+
+nextcloud_db_container_name: nextcloud-db
+nextcloud_db_image_name: postgres
+nextcloud_db_image_version: 11-alpine
+
+nextcloud_redis_container_name: nextcloud-redis
+nextcloud_redis_image_name: redis
+nextcloud_redis_image_version: alpine
+
+nextcloud_db_container_name: nextcloud-db
+nextcloud_db_image_name: postgres
+nextcloud_db_image_version: alpine
+
+nextcloud_db_user: nextcloud
+nextcloud_db_password: nextcloud
+nextcloud_db_name: nextcloud
+
+nextcloud_data: "{{ homeserver_data }}/nextcloud"
+nextcloud_data_www: "{{ homeserver_data }}/nextcloud/www"
+nextcloud_data_data: "{{ homeserver_data }}/nextcloud/data"
+nextcloud_data_db: "{{ nextcloud_data }}/db"
+nextcloud_data_redis: "{{ nextcloud_data }}/redis"
+
+nextcloud_http_subdomain: nextcloud
+
+nextcloud_network_bridge: nextcloud_bridge
+

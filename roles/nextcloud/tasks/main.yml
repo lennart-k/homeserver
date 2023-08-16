@@ -1,0 +1,77 @@
+- name: Start nextcloud
+  block:
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+      loop:
+        - "{{ nextcloud_data_db }}"
+        - "{{ nextcloud_data_uploads }}"
+
+    - name: Create bridge network
+      community.docker.docker_network:
+        name: "{{ nextcloud_network_bridge }}"
+        driver_options:
+          com.docker.network.bridge.name: "{{ nextcloud_network_bridge }}"
+        driver: bridge
+        state: present
+
+    - name: Start database container
+      community.docker.docker_container:
+        name: "{{ nextcloud_db_container_name }}"
+        image: "{{ nextcloud_db_image_name }}:{{ nextcloud_db_image_version }}"
+        pull: true
+        env:
+          POSTGRES_USER: "{{ nextcloud_db_user }}"
+          POSTGRES_PASSWORD: "{{ nextcloud_db_password }}"
+          POSTGRES_DB: "{{ nextcloud_db_name }}"
+        restart_policy: unless-stopped
+        volumes:
+          - "{{ nextcloud_data_db }}:/var/lib/postgresql/data"
+        networks:
+          - name: "{{ nextcloud_network_bridge }}"
+
+    - name: Start nextcloud container
+      community.docker.docker_container:
+        name: "{{ nextcloud_container_name }}"
+        image: "{{ nextcloud_image_name }}:{{ nextcloud_image_version }}"
+        pull: true
+        env: {}
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ nextcloud_http_subdomain }}"
+          traefik.http.routers.nextcloud.entrypoints: "{{ traefik_http_entrypoint }}"
+          homepage.group: Cloud
+          homepage.name: nextcloud
+          homepage.icon: codimd
+          homepage.href: "https://{{ nextcloud_http_subdomain }}.{{ homeserver_domain }}"
+        expose: [3000]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ nextcloud_network_bridge }}"
+          - name: "{{ homeserver_services_network }}"
+        volumes:
+          - "{{ nextcloud_data_uploads }}:/nextcloud/public/uploads"
+  tags:
+    - nextcloud-start
+
+- name: Stop nextcloud
+  block:
+    - name: Stop containers
+      community.docker.docker_container:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ nextcloud_container_name }}"
+        - "{{ nextcloud_db_container_name }}"
+
+    - name: Remove bridge network
+      community.docker.docker_network:
+        name: "{{ nextcloud_network_bridge }}"
+        state: absent
+
+  tags:
+    - nextcloud-stop
+    - stop
+    - never
