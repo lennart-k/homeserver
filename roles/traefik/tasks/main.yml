@@ -2,7 +2,7 @@
   block:
     - name: Create directory
       ansible.builtin.file:
-        path: "{{ traefik_data }}"
+        path: "{{ item }}"
         state: directory
         recurse: true
       loop:
