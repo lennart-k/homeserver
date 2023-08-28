@@ -1,0 +1,30 @@
+- name: Start dozzle
+  community.docker.docker_container:
+    name: "{{ dozzle_container_name }}"
+    image: "{{ dozzle_image_name }}:{{ dozzle_image_version }}"
+    pull: true
+    labels:
+      traefik.enable: "true"
+      http.subdomain: "{{ dozzle_http_subdomain }}"
+      traefik.http.routers.dozzle.entrypoints: "{{ traefik_http_entrypoint }}"
+      homepage.group: Admin
+      homepage.name: dozzle
+      homepage.icon: dozzle
+      homepage.href: "https://{{ dozzle_http_subdomain }}.{{ homeserver_domain }}"
+    expose: [8080]
+    restart_policy: unless-stopped
+    networks:
+      - name: "{{ homeserver_services_network }}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  tags:
+    - dozzle-start
+
+- name: Stop dozzle
+  community.docker.docker_container:
+    name: "{{ dozzle_container_name }}"
+    state: absent
+  tags:
+    - dozzle-stop
+    - stop
+    - never
