@@ -78,6 +78,7 @@
         pull: true
         command: ["./start-server.sh"]
         restart_policy: unless-stopped
+        expose: [3001]
         env:
           LOG_LEVEL: "{{ immich_general_log_level }}"
           IMMICH_MACHINE_LEARNING_URL: "http://{{ immich_ml_container_name }}:3003"
@@ -90,8 +91,17 @@
           TYPESENSE_ENABLED: "{{ immich_typesense_enabled }}"
           TYPESENSE_HOST: "{{ immich_typesense_container_name }}"
           TYPESENSE_API_KEY: "{{ immich_typesense_api_key }}"
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ immich_http_subdomain }}"
+          traefik.http.routers.immich.entrypoints: "{{ traefik_http_entrypoint }}"
+          homepage.group: Cloud
+          homepage.name: Immich
+          homepage.icon: immich
+          homepage.href: "https://{{ immich_http_subdomain }}.{{ homeserver_domain }}"
         networks:
           - name: "{{ immich_network_bridge }}"
+          - name: "{{ homeserver_services_network }}"
         volumes:
           - "{{ immich_data_upload }}:/usr/src/app/upload"
 
@@ -122,39 +132,6 @@
         volumes:
           - "{{ immich_data_upload }}:/usr/src/app/upload"
 
-    - name: Start Immich web container
-      community.docker.docker_container:
-        name: "{{ immich_web_container_name }}"
-        image: "{{ immich_web_image_name }}:{{ immich_web_image_version }}"
-        pull: true
-        restart_policy: unless-stopped
-        env:
-          IMMICH_SERVER_URL: "http://{{ immich_server_container_name }}:3001"
-          PUBLIC_LOGIN_PAGE_MESSAGE: "{{ immich_general_public_login_page_message }}"
-        networks:
-          - name: "{{ immich_network_bridge }}"
-
-    - name: Start Immich proxy container
-      community.docker.docker_container:
-        name: "{{ immich_proxy_container_name }}"
-        image: "{{ immich_proxy_image_name }}:{{ immich_proxy_image_version }}"
-        pull: true
-        restart_policy: unless-stopped
-        expose: [8080]
-        env:
-          IMMICH_WEB_URL: "http://{{ immich_web_container_name }}:3000"
-          IMMICH_SERVER_URL: "http://{{ immich_server_container_name }}:3001"
-        labels:
-          traefik.enable: "true"
-          http.subdomain: "{{ immich_http_subdomain }}"
-          traefik.http.routers.immich.entrypoints: "{{ traefik_http_entrypoint }}"
-          homepage.group: Cloud
-          homepage.name: Immich
-          homepage.icon: immich
-          homepage.href: "https://{{ immich_http_subdomain }}.{{ homeserver_domain }}"
-        networks:
-          - name: "{{ immich_network_bridge }}"
-          - name: "{{ homeserver_services_network }}"
   tags:
     - immich-start
 
@@ -165,8 +142,8 @@
         name: "{{ item }}"
         state: absent
       loop:
-        - "{{ immich_proxy_container_name }}"
-        - "{{ immich_web_container_name }}"
+        # - "{{ immich_proxy_container_name }}"
+        # - "{{ immich_web_container_name }}"
         - "{{ immich_microservices_container_name }}"
         - "{{ immich_server_container_name }}"
         - "{{ immich_ml_container_name }}"
