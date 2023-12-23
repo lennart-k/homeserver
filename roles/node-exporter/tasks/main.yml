@@ -5,6 +5,7 @@
     pull: true
     command:
       - '--path.rootfs=/host'
+      - '--collector.ethtool.metrics-include=ethtool'
     expose: [9100]
     restart_policy: unless-stopped
     networks:
