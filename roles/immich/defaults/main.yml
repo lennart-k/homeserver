@@ -1,10 +1,5 @@
 immich_image_version: release
 
-# Database for search
-immich_typesense_container_name: immich-typesense
-immich_typesense_image_name: typesense/typesense
-immich_typesense_image_version: "0.24.1"
-
 # Queue management for immich_microservices
 immich_redis_container_name: immich-redis
 immich_redis_image_name: redis
@@ -12,8 +7,8 @@ immich_redis_image_version: "6.2"
 
 # persistent data
 immich_db_container_name: immich-db
-immich_db_image_name: postgres
-immich_db_image_version: 14
+immich_db_image_name: tensorchord/pgvecto-rs
+immich_db_image_version: pg14-v0.1.11
 
 # Run Machine Learning models
 immich_ml_container_name: immich-machine_learning
@@ -43,15 +38,11 @@ immich_db_username: immich  # server, microservices
 immich_db_password: supersecretpassword  # server, microservices
 immich_db_database: immich  # server, microservices
 
-immich_typesense_enabled: "true"  # server, microservices
-immich_typesense_api_key: supersecretkey  # server, microservices, typesense
-
 immich_data: "{{ homeserver_data }}/immich"
 immich_data_upload: "{{ immich_data }}/upload"
 immich_data_db: "{{ immich_data }}/db"
 immich_data_redis: "{{ immich_data }}/redis"
 immich_data_ml_cache: "{{ immich_data }}/ml_cache"
-immich_data_typesense_data: "{{ immich_data }}/typesense_data"
 
 immich_http_subdomain: immich
 

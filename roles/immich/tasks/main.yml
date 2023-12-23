@@ -10,7 +10,6 @@
         - "{{ immich_data_db }}"
         - "{{ immich_data_redis }}"
         - "{{ immich_data_ml_cache }}"
-        - "{{ immich_data_typesense_data }}"
 
     - name: Create bridge network
       community.docker.docker_network:
@@ -19,20 +18,6 @@
           com.docker.network.bridge.name: "{{ immich_network_bridge }}"
         driver: bridge
         state: present
-
-    - name: Create Typesense container
-      community.docker.docker_container:
-        name: "{{ immich_typesense_container_name }}"
-        image: "{{ immich_typesense_image_name }}:{{ immich_typesense_image_version }}"
-        pull: true
-        env:
-          TYPESENSE_API_KEY: "{{ immich_typesense_api_key }}"
-          TYPESENSE_DATA_DIR: "/data"
-        restart_policy: unless-stopped
-        volumes:
-          - "{{ immich_data_typesense_data }}:/data"
-        networks:
-          - name: "{{ immich_network_bridge }}"
 
     - name: Create Redis container
       community.docker.docker_container:
@@ -88,9 +73,6 @@
           DB_PASSWORD: "{{ immich_db_password }}"
           DB_DATABASE_NAME: "{{ immich_db_database }}"
           REDIS_HOSTNAME: "{{ immich_redis_container_name }}"
-          TYPESENSE_ENABLED: "{{ immich_typesense_enabled }}"
-          TYPESENSE_HOST: "{{ immich_typesense_container_name }}"
-          TYPESENSE_API_KEY: "{{ immich_typesense_api_key }}"
         labels:
           traefik.enable: "true"
           http.subdomain: "{{ immich_http_subdomain }}"
@@ -124,9 +106,6 @@
           DB_PASSWORD: "{{ immich_db_password }}"
           DB_DATABASE_NAME: "{{ immich_db_database }}"
           REDIS_HOSTNAME: "{{ immich_redis_container_name }}"
-          TYPESENSE_ENABLED: "{{ immich_typesense_enabled }}"
-          TYPESENSE_HOST: "{{ immich_typesense_container_name }}"
-          TYPESENSE_API_KEY: "{{ immich_typesense_api_key }}"
         networks:
           - name: "{{ immich_network_bridge }}"
         volumes:
@@ -149,7 +128,6 @@
         - "{{ immich_ml_container_name }}"
         - "{{ immich_db_container_name }}"
         - "{{ immich_redis_container_name }}"
-        - "{{ immich_typesense_container_name }}"
 
     - name: Remove bridge network
       community.docker.docker_network:
