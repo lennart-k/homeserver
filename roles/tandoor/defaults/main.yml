@@ -10,7 +10,7 @@ tandoor_nginx_image_version: mainline-alpine
 
 tandoor_db_container_name: tandoor-db
 tandoor_db_image_name: postgres
-tandoor_db_image_version: 11-alpine
+tandoor_db_image_version: 16-alpine
 
 tandoor_data_db: "{{ tandoor_data }}/db"
 tandoor_data_mediafiles: "{{ tandoor_data }}/mediafiles"
