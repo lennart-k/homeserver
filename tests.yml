@@ -1,0 +1,17 @@
+- name: Services
+  hosts: all
+  become: yes
+  vars_files:
+    - vars/tests.yml
+  pre_tasks:
+    - name: Update apt repository (Debian)
+      apt:
+        update_cache: true
+      when: ansible_os_family == 'Debian'
+  roles:
+    - { role: geerlingguy.docker }
+    - { role: services-network }
+    - { role: traefik }
+    - { role: drawio }
+    - { role: hedgedoc }
+
