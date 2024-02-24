@@ -8,7 +8,7 @@ immich_redis_image_version: "6.2"
 # persistent data
 immich_db_container_name: immich-db
 immich_db_image_name: tensorchord/pgvecto-rs
-immich_db_image_version: pg14-v0.1.11
+immich_db_image_version: pg14-v0.2.0
 
 # Run Machine Learning models
 immich_ml_container_name: immich-machine_learning
