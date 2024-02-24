@@ -1,0 +1,29 @@
+server {
+  listen         80 default_server;
+  server_name    {{ matrix_http_subdomain }}.{{ homeserver_domain }} {{ homeserver_domain }};
+
+  location /.well-known/matrix/client {
+    default_type application/json;
+    add_header Access-Control-Allow-Origin  *;
+    return 200 '
+      {
+        "m.homeserver": {"base_url": "https://{{ matrix_http_subdomain }}.{{ homeserver_domain }}"},
+        "org.matrix.msc2965.authentication": {
+          "issuer": "https://{{ matrix_http_mas_subdomain }}.{{ homeserver_domain }}/",
+          "account": "https://{{ matrix_http_mas_subdomain }}.{{ homeserver_domain }}/account"
+        },
+        "org.matrix.msc3575.proxy": { "url": "https://{{ matrix_http_sync3_subdomain }}.{{ homeserver_domain }}" }
+      }
+    ';
+  }
+
+  location /.well-known/matrix/server {
+    default_type application/json;
+    add_header Access-Control-Allow-Origin  *;
+    return 200 '
+      {
+        "m.server": "{{ matrix_http_subdomain }}.{{ homeserver_domain }}:443"
+      }
+    ';
+  }
+}

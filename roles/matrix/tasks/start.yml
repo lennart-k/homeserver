@@ -1,0 +1,151 @@
+- name: Start Matrix
+  block:
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+      with_items:
+        - "{{ matrix_data_db }}"
+        - "{{ matrix_data_nginx }}"
+
+    - name: Create synapse directory with correct permissions
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+        owner: 991
+        group: 991
+      with_items:
+        - "{{ matrix_data_synapse }}"
+
+    - name: Install synapse config
+      ansible.builtin.template:
+        src: matrix-synapse.yml
+        dest: "{{ matrix_data_synapse }}/config.yml"
+        # use non-default template escape sequence, because the 
+        # OIDC configuration uses its own internal jinja templates
+        variable_start_string: !unsafe '{{{{'
+        variable_end_string: !unsafe '}}}}'
+        owner: root
+        mode: 0644
+
+    - name: Copy nginx wellknown.conf to target
+      ansible.builtin.template:
+        src: matrix-wellknown.conf.j2
+        dest: "{{ matrix_data_nginx }}/matrix-wellknown.conf"
+        owner: root
+        mode: 0644
+
+    - name: Install mas config
+      ansible.builtin.template:
+        src: matrix-mas-config.yml
+        dest: "{{ matrix_data }}/matrix-mas-config.yml"
+        variable_start_string: !unsafe '{{{{'
+        variable_end_string: !unsafe '}}}}'
+        owner: root
+        mode: 0644
+
+    - name: Create bridge network
+      community.docker.docker_network:
+        name: "{{ matrix_network_bridge }}"
+        driver_options:
+          com.docker.network.bridge.name: "{{ matrix_network_bridge }}"
+        driver: bridge
+        state: present
+
+    - name: Start database container
+      community.docker.docker_container:
+        name: "{{ matrix_db_container_name }}"
+        image: "{{ matrix_db_image_name }}:{{ matrix_db_image_version }}"
+        pull: true
+        restart_policy: unless-stopped
+        env:
+          POSTGRES_DB: "{{ matrix_db_name }}"
+          POSTGRES_USER: "{{ matrix_db_user }}"
+          POSTGRES_PASSWORD: "{{ matrix_db_password }}"
+          POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+        volumes:
+          - "{{ matrix_data_db }}:/var/lib/postgresql/data"
+        networks:
+          - name: "{{ matrix_network_bridge }}"
+
+    - name: Start matrix mas (matrix authentication service) container
+      community.docker.docker_container:
+        name: "{{ matrix_mas_container_name }}"
+        image: "{{ matrix_mas_image_name }}:{{ matrix_mas_image_version }}"
+        pull: true
+        entrypoint: ["mas-cli", "server", "--migrate", "--config=/matrix-mas-config.yml"]
+        labels: 
+          traefik.enable: "true"
+          http.subdomain: "{{ matrix_http_mas_subdomain }}"
+          traefik.http.routers.matrix_mas.entrypoints: "{{ traefik_http_entrypoint }}"
+          traefik.http.routers.matrix_mas.rule: "Host(`{{ matrix_http_mas_subdomain }}.{{ homeserver_domain }}`) || (Host(`{{ matrix_http_subdomain }}.{{ homeserver_domain }}`) && PathPrefix(`/_matrix/client/{somthing:.*}/{action:(login|logout|refresh)}`))"
+        restart_policy: unless-stopped
+        expose: [8080]
+        volumes:
+          - "{{ matrix_data }}/matrix-mas-config.yml:/matrix-mas-config.yml:ro"
+        networks:
+          - name: "{{ homeserver_services_network }}"
+          - name: "{{ matrix_network_bridge }}"
+
+    - name: Start matrix sync3 (sliding sync) container
+      community.docker.docker_container:
+        name: "{{ matrix_sync3_container_name }}"
+        image: "{{ matrix_sync3_image_name }}:{{ matrix_sync3_image_version }}"
+        pull: true
+        labels: 
+          traefik.enable: "true"
+          http.subdomain: "{{ matrix_http_sync3_subdomain }}"
+          traefik.http.routers.matrix-sync3.entrypoints: "{{ traefik_http_entrypoint }}"
+        env:
+          SYNCV3_SERVER: "https://{{ matrix_http_subdomain }}.{{ homeserver_domain }}"
+          SYNCV3_DB: "host={{ matrix_db_container_name }} sslmode=disable port=5432 dbname={{ matrix_db_sync3_name }} user={{ matrix_db_user }} password={{ matrix_db_password }}"
+          SYNCV3_SECRET: "{{ matrix_sync3_secret }}"
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ homeserver_services_network }}"
+          - name: "{{ matrix_network_bridge }}"
+
+    - name: Start matrix synapse container
+      community.docker.docker_container:
+        name: "{{ matrix_synapse_container_name }}"
+        image: "{{ matrix_synapse_image_name }}:{{ matrix_synapse_image_version }}"
+        pull: true
+        labels: 
+          traefik.enable: "true"
+          http.subdomain: "{{ matrix_http_subdomain }}"
+          traefik.http.routers.matrix.entrypoints: "{{ traefik_http_entrypoint }}"
+          homepage.group: Cloud
+          homepage.name: Matrix Synapse
+          homepage.icon: matrix
+          homepage.href: "https://{{ matrix_http_subdomain }}.{{ homeserver_domain }}"
+        env:
+          SYNAPSE_CONFIG_PATH: "/data/config.yml"
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ homeserver_services_network }}"
+          - name: "{{ matrix_network_bridge }}"
+        volumes:
+          - "{{ matrix_data_synapse }}:/data"
+
+    - name: Start nginx container
+      community.docker.docker_container:
+        name: "{{ matrix_nginx_container_name }}"
+        image: "{{ matrix_nginx_image_name }}:{{ matrix_nginx_image_version }}"
+        pull: true
+        restart_policy: unless-stopped
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ matrix_http_subdomain }}"
+          traefik.http.routers.matrix_wellknown.entrypoints: "{{ traefik_http_entrypoint }}"
+          traefik.http.routers.matrix_wellknown.rule: "(Host(`{{ matrix_http_subdomain }}.{{ homeserver_domain }}`) || Host(`{{ homeserver_domain }}`)) && (PathPrefix(`/.well-known/matrix/server`) || PathPrefix(`/.well-known/matrix/client`))"
+        networks:
+          - name: "{{ homeserver_services_network }}"
+          - name: "{{ matrix_network_bridge }}"
+        expose:
+          - 80
+        volumes:
+          - "{{ matrix_data_nginx }}:/etc/nginx/conf.d:ro"
+  tags:
+    - matrix-start

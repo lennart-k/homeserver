@@ -1,0 +1,44 @@
+matrix_data: "{{ homeserver_data }}/matrix"
+
+matrix_synapse_container_name: matrix-synapse
+matrix_synapse_image_name: ghcr.io/element-hq/synapse
+matrix_synapse_image_version: latest
+
+matrix_sync3_container_name: matrix-sync3
+matrix_sync3_image_name: ghcr.io/matrix-org/sliding-sync
+matrix_sync3_image_version: latest
+
+matrix_mas_container_name: matrix-mas
+matrix_mas_image_name: ghcr.io/matrix-org/matrix-authentication-service
+matrix_mas_image_version: latest
+
+matrix_nginx_container_name: matrix-nginx
+matrix_nginx_image_name: nginx
+matrix_nginx_image_version: mainline-alpine
+
+matrix_db_container_name: matrix-db
+matrix_db_image_name: postgres
+matrix_db_image_version: 16-alpine
+matrix_db_name: synapse
+matrix_db_user: synapse
+matrix_db_password: super_secret_password that you need to change!
+# TODO: Do following manually! CREATE DATABASE sync3 WITH OWNER = synapse;
+matrix_db_sync3_name: sync3
+
+# TODO: Do following manually! CREATE DATABASE sync3 WITH OWNER = synapse;
+matrix_db_mas_name: mas
+
+matrix_data_synapse: "{{ matrix_data }}/synapse"
+matrix_data_db: "{{ matrix_data }}/db"
+matrix_data_nginx: "{{ matrix_data }}/nginx"
+
+matrix_sync3_secret: super_secret_password that you need to change!
+
+matrix_mas_synapse_secret: super_secret_password that you need to change!
+matrix_synapse_admin_secret: super_secret_password that you need to change!
+
+matrix_network_bridge: matrix_bridge
+matrix_http_subdomain: matrix
+matrix_http_sync3_subdomain: "sync3-{{ matrix_http_subdomain }}"
+matrix_http_mas_subdomain: "mas-{{ matrix_http_subdomain }}"
+

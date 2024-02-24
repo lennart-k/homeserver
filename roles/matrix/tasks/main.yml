@@ -1,0 +1,26 @@
+- include_tasks: start.yml
+  tags:
+    - matrix-start
+
+- name: Stop Matrix
+  block:
+    - name: Stop containers
+      community.docker.docker_container:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ matrix_synapse_container_name }}"
+        - "{{ matrix_sync3_container_name }}"
+        - "{{ matrix_mas_container_name }}"
+        - "{{ matrix_db_container_name }}"
+        - "{{ matrix_nginx_container_name }}"
+
+    - name: Remove bridge network
+      community.docker.docker_network:
+        name: "{{ matrix_network_bridge }}"
+        state: absent
+
+  tags:
+    - matrix-stop
+    - stop
+    - never
