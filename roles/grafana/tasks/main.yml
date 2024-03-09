@@ -19,7 +19,7 @@
         labels:
           traefik.enable: "true"
           http.subdomain: "{{ grafana_http_subdomain }}"
-          traefik.http.routers.grafana.entrypoints: "{{ traefik_http_entrypoint }}"
+          traefik.http.routers.grafana.entrypoints: "{{ grafana_http_entrypoints }}"
           homepage.group: Admin
           homepage.name: Grafana
           homepage.icon: grafana

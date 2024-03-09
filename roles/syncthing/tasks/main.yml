@@ -16,7 +16,7 @@
         labels:
           traefik.enable: "true"
           http.subdomain: "{{ syncthing_http_subdomain }}"
-          traefik.http.routers.syncthing.entrypoints: "{{ traefik_http_entrypoint }}"
+          traefik.http.routers.syncthing.entrypoints: "{{ syncthing_http_entrypoints }}"
           homepage.group: Admin
           homepage.name: Syncthing
           homepage.icon: syncthing

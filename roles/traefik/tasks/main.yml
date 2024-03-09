@@ -31,6 +31,8 @@
           - 80:80/tcp
           - 443:443/tcp
           - 443:443/udp
+          - 8443:8443/tcp
+          - 8443:8443/udp
         pull: true
         expose: [80]
         restart_policy: unless-stopped

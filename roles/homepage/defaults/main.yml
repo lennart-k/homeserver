@@ -7,3 +7,4 @@ homepage_data_config: "{{ homepage_data }}/config"
 # Homepage will create a logs folder here
 homepage_data_logs: "{{ homepage_data }}"
 homepage_http_subdomain: homepage
+homepage_http_entrypoints: "{{ traefik_http_entrypoint }}"

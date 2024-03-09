@@ -7,3 +7,4 @@ prometheus_data_data: "{{ prometheus_data }}/data"
 prometheus_data_config: "{{ prometheus_data }}/config"
 
 prometheus_http_subdomain: prometheus
+prometheus_http_entrypoints: "{{ traefik_http_entrypoint }}"

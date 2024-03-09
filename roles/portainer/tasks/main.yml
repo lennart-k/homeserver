@@ -14,7 +14,7 @@
         labels:
           traefik.enable: "true"
           http.subdomain: "{{ portainer_http_subdomain }}"
-          traefik.http.routers.portainer.entrypoints: "{{ traefik_http_entrypoint }}"
+          traefik.http.routers.portainer.entrypoints: "{{ portainer_http_entrypoints }}"
           traefik.http.services.portainer.loadbalancer.server.port: "9000"
           homepage.group: Admin
           homepage.name: Portainer

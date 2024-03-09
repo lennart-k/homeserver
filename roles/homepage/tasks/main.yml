@@ -17,7 +17,8 @@
         labels:
           traefik.enable: "true"
           http.subdomain: "{{ homepage_http_subdomain }}"
-          traefik.http.routers.homepage.entrypoints: "{{ traefik_http_entrypoint }}"
+          traefik.http.routers.homepage.entrypoints: "{{ homepage_http_entrypoints }}"
+          traefik.http.routers.homepage.middlewares: "authelia@docker"
         expose: [3000]
         restart_policy: unless-stopped
         networks:

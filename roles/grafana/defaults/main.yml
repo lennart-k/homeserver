@@ -7,3 +7,4 @@ grafana_data_data: "{{ grafana_data }}/data"
 grafana_data_config: "{{ grafana_data }}/config"
 
 grafana_http_subdomain: grafana
+grafana_http_entrypoints: "{{ traefik_http_entrypoint }}"

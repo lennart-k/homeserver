@@ -8,3 +8,4 @@ syncthing_volumes:
   - "{{ syncthing_data }}:/var/syncthing"
 
 syncthing_http_subdomain: syncthing
+syncthing_http_entrypoints: "{{ traefik_http_entrypoint }}"

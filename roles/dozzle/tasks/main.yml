@@ -6,7 +6,7 @@
     labels:
       traefik.enable: "true"
       http.subdomain: "{{ dozzle_http_subdomain }}"
-      traefik.http.routers.dozzle.entrypoints: "{{ traefik_http_entrypoint }}"
+      traefik.http.routers.dozzle.entrypoints: "{{ dozzle_http_entrypoints }}"
       homepage.group: Admin
       homepage.name: dozzle
       homepage.icon: dozzle

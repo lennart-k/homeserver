@@ -28,7 +28,7 @@
         labels:
           traefik.enable: "true"
           http.subdomain: "{{ prometheus_http_subdomain }}"
-          traefik.http.routers.prometheus.entrypoints: "{{ traefik_http_entrypoint }}"
+          traefik.http.routers.prometheus.entrypoints: "{{ prometheus_http_entrypoints }}"
           homepage.group: Admin
           homepage.name: Prometheus
           homepage.icon: prometheus

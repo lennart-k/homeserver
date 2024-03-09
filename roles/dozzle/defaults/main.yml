@@ -3,3 +3,4 @@ dozzle_image_name: amir20/dozzle
 dozzle_image_version: latest
 
 dozzle_http_subdomain: dozzle
+dozzle_http_entrypoints: "{{ traefik_http_entrypoint }}"

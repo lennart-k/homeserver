@@ -5,3 +5,4 @@ portainer_image_version: latest
 portainer_data: "{{ homeserver_data }}/portainer"
 
 portainer_http_subdomain: portainer
+portainer_http_entrypoints: "{{ traefik_http_entrypoint }}"
