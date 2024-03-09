@@ -1,0 +1,95 @@
+- name: Start paperless
+  block:
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+      with_items:
+        - "{{ paperless_data_db }}"
+        - "{{ paperless_data_redis }}"
+
+    - name: Create directories (as 1000)
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+        owner: 1000
+        group: 1000
+      with_items:
+        - "{{ paperless_data_data }}"
+        - "{{ paperless_data_export }}"
+        - "{{ paperless_data_media }}"
+        # - "{{ paperless_data_consume }}"
+
+    - name: Create bridge network
+      community.docker.docker_network:
+        name: "{{ paperless_network_bridge }}"
+        driver_options:
+          com.docker.network.bridge.name: "{{ paperless_network_bridge[:15] }}"
+        driver: bridge
+        state: present
+
+    - name: Start redis container
+      community.docker.docker_container:
+        name: "{{ paperless_redis_container_name }}"
+        image: "{{ paperless_redis_image_name }}:{{ paperless_redis_image_version }}"
+        pull: true
+        restart_policy: unless-stopped
+        volumes:
+          - "{{ paperless_data_redis }}:/data"
+        networks:
+          - name: "{{ paperless_network_bridge }}"
+
+    - name: Start database container
+      community.docker.docker_container:
+        name: "{{ paperless_db_container_name }}"
+        image: "{{ paperless_db_image_name }}:{{ paperless_db_image_version }}"
+        pull: true
+        restart_policy: unless-stopped
+        volumes:
+          - "{{ paperless_data_db }}:/var/lib/postgresql/data"
+        networks:
+          - name: "{{ paperless_network_bridge }}"
+        env:
+          POSTGRES_DB: paperless
+          POSTGRES_USER: paperless
+          POSTGRES_PASSWORD: "{{ paperless_postgres_password }}"
+
+    - name: Start paperless container
+      community.docker.docker_container:
+        name: "{{ paperless_container_name }}"
+        image: "{{ paperless_image_name }}:{{ paperless_image_version }}"
+        pull: true
+        restart_policy: unless-stopped
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ paperless_http_subdomain }}"
+          traefik.http.routers.paperless-new.entrypoints: "{{ traefik_http_entrypoint }}"
+        networks:
+          - name: "{{ homeserver_services_network }}"
+          - name: "{{ paperless_network_bridge }}"
+        expose: [8000]
+        volumes:
+          - "{{ paperless_data_data }}:/usr/src/paperless/data"
+          - "{{ paperless_data_media }}:/usr/src/paperless/media"
+          - "{{ paperless_data_export }}:/usr/src/paperless/export"
+          # - "{{ paperless_data_consume }}:/usr/src/paperless/consume"
+        env:
+          PAPERLESS_REDIS: "redis://{{ paperless_redis_container_name }}"
+          PAPERLESS_DBHOST: "{{ paperless_db_container_name }}"
+          PAPERLESS_SECRET_KEY: "{{ paperless_secret_key }}"
+          USERMAP_UID: "1000"
+          USERMAP_GID: "1000"
+          PAPERLESS_OCR_LANGUAGES: "eng deu"
+          PAPERLESS_OCS_LANGUAGE: "deu"
+          PAPERLESS_URL: "https://{{ paperless_http_subdomain }}.{{ homeserver_domain }}"
+          PAPERLESS_ALLOWED_HOSTS: "{{ paperless_http_subdomain }}.{{ homeserver_domain }},localhost"
+          PAPERLESS_TIME_ZONE: "Europe/Berlin"  # TODO: configurable
+          PAPERLESS_TASK_WORKERS: "2"
+          PAPERLESS_THREADS_PER_WORKER: "2"
+          PAPERLESS_APPS: "allauth.socialaccount.providers.openid_connect"
+          PAPERLESS_SOCIAL_PROVIDERS: "{{ paperless_social_providers }}"
+          PAPERLESS_SOCIALACCOUNT_PROVIDERS: "{{ paperless_socialaccount_providers | tojson | string }}"
+  tags:
+    - paperless-start

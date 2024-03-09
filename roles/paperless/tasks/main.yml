@@ -1,0 +1,24 @@
+- include_tasks: start.yml
+  tags:
+    - paperless-start
+
+- name: Stop paperless
+  block:
+    - name: Stop containers
+      community.docker.docker_container:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ paperless_container_name }}"
+        - "{{ paperless_redis_container_name }}"
+        - "{{ paperless_db_container_name }}"
+
+    - name: Remove bridge network
+      community.docker.docker_network:
+        name: "{{ paperless_network_bridge }}"
+        state: absent
+
+  tags:
+    - paperless-stop
+    - stop
+    - never

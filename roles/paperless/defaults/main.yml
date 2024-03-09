@@ -1,0 +1,29 @@
+paperless_data: "{{ homeserver_data }}/paperless"
+
+paperless_container_name: paperless
+paperless_image_name: ghcr.io/paperless-ngx/paperless-ngx
+paperless_image_version: latest
+
+paperless_redis_container_name: paperless-redis
+paperless_redis_image_name: docker.io/library/redis
+paperless_redis_image_version: 7-alpine
+
+paperless_db_container_name: paperless-db
+paperless_db_image_name: postgres
+paperless_db_image_version: 13-alpine
+
+paperless_data_db: "{{ paperless_data }}/db"
+paperless_data_data: "{{ paperless_data }}/data"
+paperless_data_media: "{{ paperless_data }}/media"
+paperless_data_export: "{{ paperless_data }}/export"
+# paperless_data_consume: "{{ paperless_data }}/consume"
+paperless_data_redis: "{{ paperless_data }}/redis"
+# paperless_data_env_file: "{{ paperless_data }}/env_file"
+
+paperless_network_bridge: paperless_bridge
+paperless_http_subdomain: paperless
+
+# paperless_postgres_password: super_secret_password that you need to change!
+# paperless_secret_key: super_secret_key that you need to change!
+# paperless_social_providers: ''
+# paperless_socialaccount_providers: {}
