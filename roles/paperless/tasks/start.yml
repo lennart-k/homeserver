@@ -20,7 +20,7 @@
         - "{{ paperless_data_data }}"
         - "{{ paperless_data_export }}"
         - "{{ paperless_data_media }}"
-        # - "{{ paperless_data_consume }}"
+        - "{{ paperless_data_consume }}"
 
     - name: Create bridge network
       community.docker.docker_network:
@@ -74,7 +74,7 @@
           - "{{ paperless_data_data }}:/usr/src/paperless/data"
           - "{{ paperless_data_media }}:/usr/src/paperless/media"
           - "{{ paperless_data_export }}:/usr/src/paperless/export"
-          # - "{{ paperless_data_consume }}:/usr/src/paperless/consume"
+          - "{{ paperless_data_consume }}:/usr/src/paperless/consume"
         env:
           PAPERLESS_REDIS: "redis://{{ paperless_redis_container_name }}"
           PAPERLESS_DBHOST: "{{ paperless_db_container_name }}"
@@ -85,7 +85,7 @@
           PAPERLESS_OCS_LANGUAGE: "deu"
           PAPERLESS_URL: "https://{{ paperless_http_subdomain }}.{{ homeserver_domain }}"
           PAPERLESS_ALLOWED_HOSTS: "{{ paperless_http_subdomain }}.{{ homeserver_domain }},localhost"
-          PAPERLESS_TIME_ZONE: "Europe/Berlin"  # TODO: configurable
+          PAPERLESS_TIME_ZONE: "Europe/Berlin" # TODO: configurable
           PAPERLESS_TASK_WORKERS: "2"
           PAPERLESS_THREADS_PER_WORKER: "2"
           PAPERLESS_APPS: "allauth.socialaccount.providers.openid_connect"

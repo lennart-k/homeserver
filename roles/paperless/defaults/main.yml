@@ -16,13 +16,12 @@ paperless_data_db: "{{ paperless_data }}/db"
 paperless_data_data: "{{ paperless_data }}/data"
 paperless_data_media: "{{ paperless_data }}/media"
 paperless_data_export: "{{ paperless_data }}/export"
-# paperless_data_consume: "{{ paperless_data }}/consume"
+paperless_data_consume: "{{ paperless_data }}/consume"
 paperless_data_redis: "{{ paperless_data }}/redis"
 # paperless_data_env_file: "{{ paperless_data }}/env_file"
 
 paperless_network_bridge: paperless_bridge
 paperless_http_subdomain: paperless
-
 # paperless_postgres_password: super_secret_password that you need to change!
 # paperless_secret_key: super_secret_key that you need to change!
 # paperless_social_providers: ''
