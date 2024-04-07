@@ -50,8 +50,8 @@
         expose: [8123]
         restart_policy: unless-stopped
         networks:
-          - name: "{{ homeassistant_network_bridge }}"
           - name: "{{ homeserver_services_network }}"
+          - name: "{{ homeassistant_network_bridge }}"
         volumes:
           - "{{ homeassistant_data_config }}:/config"
           - /etc/localtime:/etc/localtime:ro
