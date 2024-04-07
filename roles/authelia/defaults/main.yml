@@ -1,5 +1,5 @@
 authelia_container_name: authelia
-authelia_image_name: authelia/authelia
+authelia_image_name: ghcr.io/authelia/authelia
 authelia_image_version: latest
 
 authelia_redis_container_name: authelia-redis
