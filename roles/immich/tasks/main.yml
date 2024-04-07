@@ -121,8 +121,6 @@
         name: "{{ item }}"
         state: absent
       loop:
-        # - "{{ immich_proxy_container_name }}"
-        # - "{{ immich_web_container_name }}"
         - "{{ immich_microservices_container_name }}"
         - "{{ immich_server_container_name }}"
         - "{{ immich_ml_container_name }}"
