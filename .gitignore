@@ -6,3 +6,5 @@
 
 roles/geerlingguy.security
 roles/geerlingguy.docker
+
+vault_pass.sh
