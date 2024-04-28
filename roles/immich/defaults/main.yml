@@ -27,19 +27,19 @@ immich_microservices_image_version: "{{ immich_image_version }}"
 
 # Immich config environment variables
 # see https://immich.app/docs/install/environment-variables
-immich_general_tz: Europe/Berlin  # microservices
-immich_general_log_level: log  # server, microservices
-immich_general_public_login_page_message: ""  # web
+immich_general_tz: Europe/Berlin # microservices
+immich_general_log_level: log # server, microservices
+immich_general_public_login_page_message: "" # web
 
-immich_geocoding_disable_reverse_geocoding: "false"  # microservices
-immich_geocoding_reverse_geocoding_precision: "3"  # microservices
+immich_geocoding_disable_reverse_geocoding: "false" # microservices
+immich_geocoding_reverse_geocoding_precision: "3" # microservices
 
-immich_db_username: immich  # server, microservices
-immich_db_password: supersecretpassword  # server, microservices
-immich_db_database: immich  # server, microservices
+immich_db_username: immich # server, microservices
+immich_db_password: supersecretpassword # server, microservices
+immich_db_database: immich # server, microservices
 
 immich_data: "{{ homeserver_data }}/immich"
-immich_data_upload: "{{ immich_data }}/upload"
+immich_data_upload: "{{ immich_data }}/library"
 immich_data_db: "{{ immich_data }}/db"
 immich_data_redis: "{{ immich_data }}/redis"
 immich_data_ml_cache: "{{ immich_data }}/ml_cache"
