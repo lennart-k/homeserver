@@ -11,6 +11,10 @@
         - "{{ immich_data_redis }}"
         - "{{ immich_data_ml_cache }}"
 
+    - name: Install immich.yml
+      ansible.builtin.template:
+        src: immich-config.yml
+        dest: "{{ immich_data }}/immich.yml"
     - name: Create bridge network
       community.docker.docker_network:
         name: "{{ immich_network_bridge }}"
@@ -73,6 +77,7 @@
           DB_PASSWORD: "{{ immich_db_password }}"
           DB_DATABASE_NAME: "{{ immich_db_database }}"
           REDIS_HOSTNAME: "{{ immich_redis_container_name }}"
+          IMMICH_CONFIG_FILE: "/immich.yml"
         labels:
           traefik.enable: "true"
           http.subdomain: "{{ immich_http_subdomain }}"
@@ -106,6 +111,7 @@
           DB_PASSWORD: "{{ immich_db_password }}"
           DB_DATABASE_NAME: "{{ immich_db_database }}"
           REDIS_HOSTNAME: "{{ immich_redis_container_name }}"
+          IMMICH_CONFIG_FILE: "/immich.yml"
         networks:
           - name: "{{ immich_network_bridge }}"
         volumes:
