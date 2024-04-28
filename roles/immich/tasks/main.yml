@@ -15,6 +15,7 @@
       ansible.builtin.template:
         src: immich-config.yml
         dest: "{{ immich_data }}/immich.yml"
+
     - name: Create bridge network
       community.docker.docker_network:
         name: "{{ immich_network_bridge }}"
@@ -89,8 +90,7 @@
         networks:
           - name: "{{ immich_network_bridge }}"
           - name: "{{ homeserver_services_network }}"
-        volumes:
-          - "{{ immich_data_upload }}:/usr/src/app/upload"
+        volumes: "{{ immich_volumes }}"
 
     - name: Start Immich microservices container
       community.docker.docker_container:
@@ -114,8 +114,7 @@
           IMMICH_CONFIG_FILE: "/immich.yml"
         networks:
           - name: "{{ immich_network_bridge }}"
-        volumes:
-          - "{{ immich_data_upload }}:/usr/src/app/upload"
+        volumes: "{{ immich_volumes }}"
 
   tags:
     - immich-start

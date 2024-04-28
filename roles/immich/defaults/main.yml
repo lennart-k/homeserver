@@ -47,3 +47,7 @@ immich_data_ml_cache: "{{ immich_data }}/ml_cache"
 immich_http_subdomain: immich
 
 immich_network_bridge: immich_bridge
+
+immich_volumes:
+  - "{{ immich_data_upload }}:/usr/src/app/upload"
+  - "{{ immich_data }}/immich.yml:/immich.yml:ro"
