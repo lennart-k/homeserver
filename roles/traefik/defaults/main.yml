@@ -1,6 +1,6 @@
 traefik_container_name: traefik
 traefik_image_name: traefik
-traefik_image_version: v3.0
+traefik_image_version: v3.1
 
 traefik_data: "{{ homeserver_data }}/traefik"
 traefik_data_letsencrypt: "{{ traefik_data }}/letsencrypt"
