@@ -9,6 +9,11 @@
         - "{{ gitea_data_db }}"
         - "{{ gitea_data_data }}"
 
+    - name: Install sshd_config
+      ansible.builtin.template:
+        src: gitea_sshd_config
+        dest: "{{ gitea_data }}/sshd_config"
+
     - name: Create bridge network
       community.docker.docker_network:
         name: "{{ gitea_network_bridge }}"
@@ -67,6 +72,7 @@
           - name: "{{ homeserver_services_network }}"
         volumes:
           - "{{ gitea_data_data }}:/data"
+          - "{{ gitea_data }}/sshd_config:/etc/ssh/sshd_config:ro"
           - /etc/timezone:/etc/timezone:ro
           - /etc/localtime:/etc/localtime:ro
   tags:
