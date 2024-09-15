@@ -32,6 +32,32 @@
         networks:
           - name: "{{ homeassistant_network_bridge }}"
 
+    - name: Start wyoming-piper (TTS) container
+      community.docker.docker_container:
+        name: "{{ homeassistant_tts_container_name }}"
+        image: "{{ homeassistant_tts_image_name }}:{{ homeassistant_tts_image_version }}"
+        command: "--voice {{ homeassistant_tts_voice }}"
+        pull: true
+        expose: [10200]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ homeassistant_network_bridge }}"
+        volumes:
+          - "{{ homeassistant_data_tts }}:/data"
+
+    - name: Start wyoming-whisper (speech-to-text) container
+      community.docker.docker_container:
+        name: "{{ homeassistant_whisper_container_name }}"
+        image: "{{ homeassistant_whisper_image_name }}:{{ homeassistant_whisper_image_version }}"
+        command: "--model {{ homeassistant_whisper_model }} --language {{ homeassistant_whisper_language }}"
+        pull: true
+        expose: [10300]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ homeassistant_network_bridge }}"
+        volumes:
+          - "{{ homeassistant_data_whisper }}:/data"
+
     - name: Start homeassistant container
       community.docker.docker_container:
         name: "{{ homeassistant_container_name }}"
@@ -59,7 +85,6 @@
           - /run/dbus:/run/dbus:ro
         devices:
           - /dev/serial/by-id/pci-Silicon_Labs_slae.sh_cc2652rb_stick_-_slaesh_s_iot_stuff_00_12_4B_00_23_93_23_EB-if00-port0
-          # - /dev/ttyUSB0
   tags:
     - homeassistant-start
 

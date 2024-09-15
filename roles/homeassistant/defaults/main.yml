@@ -2,6 +2,19 @@ homeassistant_container_name: homeassistant
 homeassistant_image_name: ghcr.io/home-assistant/home-assistant
 homeassistant_image_version: rc
 
+homeassistant_whisper_container_name: homeassistant-whisper
+homeassistant_whisper_image_name: rhasspy/wyoming-whisper
+homeassistant_whisper_image_version: latest
+
+homeassistant_whisper_model: small-int8
+homeassistant_whisper_language: en
+
+homeassistant_tts_container_name: homeassistant-tts
+homeassistant_tts_image_name: rhasspy/wyoming-piper
+homeassistant_tts_image_version: latest
+
+homeassistant_tts_voice: en_GB-northern_english_male-medium
+
 homeassistant_db_container_name: homeassistant-db
 homeassistant_db_image_name: postgres
 homeassistant_db_image_version: 14-alpine
@@ -13,6 +26,8 @@ homeassistant_db_name: homeassistant
 homeassistant_data: "{{ homeserver_data }}/homeassistant"
 homeassistant_data_db: "{{ homeassistant_data }}/db"
 homeassistant_data_config: "{{ homeassistant_data }}/config"
+homeassistant_data_tts: "{{ homeassistant_data }}/tts"
+homeassistant_data_whisper: "{{ homeassistant_data }}/whisper"
 
 homeassistant_http_subdomain: home
 homeassistant_network_bridge: hass_bridge
