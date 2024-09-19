@@ -3,3 +3,4 @@ cyberchef_image_name: ghcr.io/gchq/cyberchef
 cyberchef_image_version: latest
 
 cyberchef_http_subdomain: cyberchef
+cyberchef_http_entrypoints: "{{ traefik_http_entrypoint }}"

@@ -6,7 +6,7 @@
     labels:
       traefik.enable: "true"
       http.subdomain: "{{ cyberchef_http_subdomain }}"
-      traefik.http.routers.cyberchef.entrypoints: "{{ traefik_http_entrypoint }}"
+      traefik.http.routers.cyberchef.entrypoints: "{{ cyberchef_http_entrypoints }}"
       homepage.group: Productivity
       homepage.name: Cyberchef
       homepage.icon: cyberchef
