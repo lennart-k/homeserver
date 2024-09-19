@@ -9,7 +9,7 @@ matrix_sync3_image_name: ghcr.io/matrix-org/sliding-sync
 matrix_sync3_image_version: latest
 
 matrix_mas_container_name: matrix-mas
-matrix_mas_image_name: ghcr.io/matrix-org/matrix-authentication-service
+matrix_mas_image_name: ghcr.io/element-hq/matrix-authentication-service
 matrix_mas_image_version: latest
 
 matrix_nginx_container_name: matrix-nginx
@@ -41,4 +41,3 @@ matrix_network_bridge: matrix_bridge
 matrix_http_subdomain: matrix
 matrix_http_sync3_subdomain: "sync3-{{ matrix_http_subdomain }}"
 matrix_http_mas_subdomain: "mas-{{ matrix_http_subdomain }}"
-
