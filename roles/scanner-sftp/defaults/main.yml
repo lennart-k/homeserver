@@ -1,5 +1,5 @@
 scanner_sftp_container_name: scanner_sftp
-scanner_sftp_image_name: atmoz/sftp
+scanner_sftp_image_name: ghcr.io/atmoz/sftp/alpine:latest
 scanner_sftp_image_version: latest
 
 scanner_sftp_enabled: false
