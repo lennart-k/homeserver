@@ -23,10 +23,10 @@
       ansible.builtin.template:
         src: matrix-synapse.yml
         dest: "{{ matrix_data_synapse }}/config.yml"
-        # use non-default template escape sequence, because the 
+        # use non-default template escape sequence, because the
         # OIDC configuration uses its own internal jinja templates
-        variable_start_string: !unsafe '{{{{'
-        variable_end_string: !unsafe '}}}}'
+        variable_start_string: !unsafe "{{{{"
+        variable_end_string: !unsafe "}}}}"
         owner: root
         mode: 0644
 
@@ -41,8 +41,8 @@
       ansible.builtin.template:
         src: matrix-mas-config.yml
         dest: "{{ matrix_data }}/matrix-mas-config.yml"
-        variable_start_string: !unsafe '{{{{'
-        variable_end_string: !unsafe '}}}}'
+        variable_start_string: !unsafe "{{{{"
+        variable_end_string: !unsafe "}}}}"
         owner: root
         mode: 0644
 
@@ -75,12 +75,14 @@
         name: "{{ matrix_mas_container_name }}"
         image: "{{ matrix_mas_image_name }}:{{ matrix_mas_image_version }}"
         pull: true
-        entrypoint: ["mas-cli", "server", "--migrate", "--config=/matrix-mas-config.yml"]
-        labels: 
+        entrypoint:
+          ["mas-cli", "server", "--migrate", "--config=/matrix-mas-config.yml"]
+        labels:
           traefik.enable: "true"
           http.subdomain: "{{ matrix_http_mas_subdomain }}"
           traefik.http.routers.matrix_mas.entrypoints: "{{ traefik_http_entrypoint }}"
-          traefik.http.routers.matrix_mas.rule: "Host(`{{ matrix_http_mas_subdomain }}.{{ homeserver_domain }}`) || (Host(`{{ matrix_http_subdomain }}.{{ homeserver_domain }}`) && PathPrefix(`/_matrix/client/{somthing:.*}/{action:(login|logout|refresh)}`))"
+          # traefik.http.routers.matrix_mas.rule: "Host(`{{ matrix_http_mas_subdomain }}.{{ homeserver_domain }}`) || (Host(`{{ matrix_http_subdomain }}.{{ homeserver_domain }}`) && PathPrefix(`/_matrix/client/{something:.*}/{action:(login|logout|refresh)}`))"
+          traefik.http.routers.matrix_mas.rule: "Host(`{{ matrix_http_mas_subdomain }}.{{ homeserver_domain }}`) || (Host(`{{ matrix_http_subdomain }}.{{ homeserver_domain }}`) && PathRegexp(`^/_matrix/client/.+/(login|logout|refresh)`))"
         restart_policy: unless-stopped
         expose: [8080]
         volumes:
@@ -94,7 +96,7 @@
         name: "{{ matrix_sync3_container_name }}"
         image: "{{ matrix_sync3_image_name }}:{{ matrix_sync3_image_version }}"
         pull: true
-        labels: 
+        labels:
           traefik.enable: "true"
           http.subdomain: "{{ matrix_http_sync3_subdomain }}"
           traefik.http.routers.matrix-sync3.entrypoints: "{{ traefik_http_entrypoint }}"
@@ -112,7 +114,7 @@
         name: "{{ matrix_synapse_container_name }}"
         image: "{{ matrix_synapse_image_name }}:{{ matrix_synapse_image_version }}"
         pull: true
-        labels: 
+        labels:
           traefik.enable: "true"
           http.subdomain: "{{ matrix_http_subdomain }}"
           traefik.http.routers.matrix.entrypoints: "{{ traefik_http_entrypoint }}"
