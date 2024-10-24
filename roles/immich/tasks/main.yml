@@ -67,7 +67,7 @@
         image: "{{ immich_server_image_name }}:{{ immich_server_image_version }}"
         pull: true
         restart_policy: unless-stopped
-        expose: [3001]
+        expose: [2283]
         env:
           LOG_LEVEL: "{{ immich_general_log_level }}"
           IMMICH_MACHINE_LEARNING_URL: "http://{{ immich_ml_container_name }}:3003"
