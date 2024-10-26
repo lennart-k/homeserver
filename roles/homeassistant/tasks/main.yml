@@ -97,6 +97,8 @@
       loop:
         - "{{ homeassistant_container_name }}"
         - "{{ homeassistant_db_container_name }}"
+        - "{{ homeassistant_tts_container_name }}"
+        - "{{ homeassistant_whisper_container_name }}"
 
     - name: Remove bridge network
       community.docker.docker_network:
