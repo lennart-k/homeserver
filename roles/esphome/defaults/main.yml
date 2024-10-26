@@ -1,0 +1,8 @@
+esphome_container_name: esphome
+esphome_image_name: ghcr.io/esphome/esphome
+esphome_image_version: latest
+
+esphome_http_subdomain: esphome.internal
+esphome_http_entrypoints: internal
+
+esphome_data: "{{ homeserver_data }}/esphome"

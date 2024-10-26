@@ -1,0 +1,48 @@
+- name: Start ESPHome
+  block:
+    - name: Create directory
+      ansible.builtin.file:
+        path: "{{ esphome_data }}"
+        state: directory
+        recurse: true
+
+    - name: Start esphome container
+      community.docker.docker_container:
+        name: "{{ esphome_container_name }}"
+        image: "{{ esphome_image_name }}:{{ esphome_image_version }}"
+        pull: true
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ esphome_http_subdomain }}"
+          traefik.http.routers.esphome.entrypoints: "{{ esphome_http_entrypoints }}"
+          homepage.group: Home Automation
+          homepage.name: ESPHome
+          homepage.icon: esphome
+          homepage.href: "https://{{ esphome_http_subdomain }}.{{ homeserver_domain }}"
+        env:
+          ESPHOME_DASHBOARD_USE_PING: "true"
+        expose: [6052]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ homeserver_services_network }}"
+        volumes:
+          - "{{ esphome_data }}:/config"
+          - /etc/timezone:/etc/timezone:ro
+          - /etc/localtime:/etc/localtime:ro
+          - /run/dbus:/run/dbus:ro
+  tags:
+    - esphome-start
+
+- name: Stop ESPHome
+  block:
+    - name: Stop containers
+      community.docker.docker_container:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ esphome_container_name }}"
+
+  tags:
+    - esphome-stop
+    - stop
+    - never
