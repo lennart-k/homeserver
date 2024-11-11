@@ -1,0 +1,49 @@
+- name: Start ntfy
+  block:
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+      with_items:
+        - "{{ ntfy_data_config }}"
+        - "{{ ntfy_data_cache }}"
+
+    - name: Start ntfy container
+      community.docker.docker_container:
+        name: "{{ ntfy_container_name }}"
+        image: "{{ ntfy_image_name }}:{{ ntfy_image_version }}"
+        pull: true
+        command:
+          - serve
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ ntfy_http_subdomain }}"
+          traefik.http.routers.ntfy.entrypoints: "{{ traefik_http_entrypoint }}"
+        expose: [80]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ homeserver_services_network }}"
+        env:
+          TZ: Europe/Berlin
+          NTFY_BASE_URL: "https://{{ ntfy_http_subdomain }}.{{ homeserver_domain }}"
+          NTFY_CACHE_FILE: /var/cache/ntfy/cache.db
+          NTFY_AUTH_FILE: /etc/ntfy/auth.db
+          NTFY_AUTH_DEFAULT_ACCESS: deny-all
+          NTFY_BEHIND_PROXY: "true"
+          NTFY_ATTACHMENT_CACHE_DIR: /var/cache/ntfy/attachments
+          NTFY_ENABLE_LOGIN: "true"
+        volumes:
+          - "{{ ntfy_data_config }}:/etc/ntfy"
+          - "{{ ntfy_data_cache }}:/var/cache/ntfy"
+  tags:
+    - ntfy-start
+
+- name: Stop ntfy
+  community.docker.docker_container:
+    name: "{{ ntfy_container_name }}"
+    state: absent
+  tags:
+    - ntfy-stop
+    - stop
+    - never

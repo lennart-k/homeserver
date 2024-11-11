@@ -1,0 +1,10 @@
+ntfy_container_name: ntfy
+ntfy_image_name: binwiederhier/ntfy
+ntfy_image_version: latest
+
+ntfy_data: "{{ homeserver_data }}/ntfy"
+
+ntfy_data_config: "{{ ntfy_data }}/config"
+ntfy_data_cache: "{{ ntfy_data }}/cache"
+
+ntfy_http_subdomain: ntfy
