@@ -1,0 +1,8 @@
+ollama_container_name: ollama
+ollama_image_name: ollama/ollama
+ollama_image_version: latest
+
+ollama_data: "{{ homeserver_data }}/ollama"
+
+ollama_http_subdomain: ollama
+ollama_http_entrypoints: "{{ traefik_http_entrypoint }}"

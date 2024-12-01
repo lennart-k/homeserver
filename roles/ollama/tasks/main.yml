@@ -1,0 +1,35 @@
+- name: Start ollama
+  block:
+    - name: Create directory
+      ansible.builtin.file:
+        path: "{{ ollama_data }}"
+        state: directory
+        recurse: true
+
+    - name: Start ollama container
+      community.docker.docker_container:
+        name: "{{ ollama_container_name }}"
+        image: "{{ ollama_image_name }}:{{ ollama_image_version }}"
+        pull: true
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ ollama_http_subdomain }}"
+          traefik.http.routers.ollama.entrypoints: "{{ ollama_http_entrypoints }}"
+        expose: [11434]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ homeserver_services_network }}"
+        volumes:
+          - "{{ ollama_data }}:/root/.ollama"
+          - "/etc/timezone:/etc/timezone"
+  tags:
+    - ollama-start
+
+- name: Stop ollama
+  community.docker.docker_container:
+    name: "{{ ollama_container_name }}"
+    state: absent
+  tags:
+    - ollama-stop
+    - stop
+    - never
