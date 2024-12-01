@@ -1,0 +1,12 @@
+diun_container_name: diun
+diun_image_name: crazymax/diun
+diun_image_version: latest
+
+diun_data: "{{ homeserver_data }}/diun"
+
+# Sets the 6 field cron schedule to use for checks and updates. This will check at 5am daily.
+diun_watch_schedule: 0 0 5 * * *
+
+diun_ntfy_endpoint: ""
+diun_ntfy_topic: alerts
+diun_ntfy_token: ""

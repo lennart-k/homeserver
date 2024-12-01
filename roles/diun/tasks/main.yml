@@ -1,0 +1,39 @@
+- name: Start diun
+  block:
+    - name: Create directory
+      ansible.builtin.file:
+        path: "{{ diun_data }}"
+        state: directory
+        recurse: true
+
+    - name: diun Docker Container
+      community.docker.docker_container:
+        name: "{{ diun_container_name }}"
+        image: "{{ diun_image_name }}:{{ diun_image_version }}"
+        pull: true
+        command: serve
+        volumes:
+          - "{{ diun_data }}:/data"
+          - "/var/run/docker.sock:/var/run/docker.sock:ro"
+          - "/etc/timezone:/etc/timezone:ro"
+        env:
+          DIUN_WATCH_WORKERS: "10"
+          DIUN_WATCH_SCHEDULE: "{{ diun_watch_schedule }}"
+          DIUN_NOTIF_NTFY_ENDPOINT: "{{ diun_ntfy_endpoint }}"
+          DIUN_NOTIF_NTFY_TOPIC: "{{ diun_ntfy_topic }}"
+          DIUN_NOTIF_NTFY_TOKEN: "{{ diun_ntfy_token }}"
+
+          DIUN_PROVIDERS_DOCKER: "true"
+          DIUN_PROVIDERS_DOCKER_WATCHBYDEFAULT: "true"
+        restart_policy: unless-stopped
+  tags:
+    - diun-start
+
+- name: Stop diun
+  community.docker.docker_container:
+    name: "{{ diun_container_name }}"
+    state: absent
+  tags:
+    - diun-stop
+    - stop
+    - never
