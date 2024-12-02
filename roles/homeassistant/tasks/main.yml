@@ -58,6 +58,16 @@
         volumes:
           - "{{ homeassistant_data_whisper }}:/data"
 
+    - name: Start WOL forwarding container
+      community.docker.docker_container:
+        name: "{{ homeassistant_wol_container_name }}"
+        image: "{{ homeassistant_wol_image_name }}:{{ homeassistant_wol_image_version }}"
+        command: "-dd UDP4-RECV:9999,range={{ homeassistant_wol_range }} UDP-SENDTO:{{ homeassistant_wol_broadcast }}:9,broadcast"
+        pull: true
+        restart_policy: unless-stopped
+        networks:
+          - name: host
+
     - name: Start homeassistant container
       community.docker.docker_container:
         name: "{{ homeassistant_container_name }}"
@@ -99,6 +109,7 @@
         - "{{ homeassistant_db_container_name }}"
         - "{{ homeassistant_tts_container_name }}"
         - "{{ homeassistant_whisper_container_name }}"
+        - "{{ homeassistant_wol_container_name }}"
 
     - name: Remove bridge network
       community.docker.docker_network:

@@ -2,6 +2,13 @@ homeassistant_container_name: homeassistant
 homeassistant_image_name: ghcr.io/home-assistant/home-assistant
 homeassistant_image_version: rc
 
+homeassistant_wol_container_name: homeassistant-wol
+homeassistant_wol_image_name: alpine/socat
+homeassistant_wol_image_version: latest
+
+homeassistant_wol_broadcast: 255.255.255.255
+homeassistant_wol_range: 0.0.0.0/0
+
 homeassistant_whisper_container_name: homeassistant-whisper
 homeassistant_whisper_image_name: rhasspy/wyoming-whisper
 homeassistant_whisper_image_version: latest
