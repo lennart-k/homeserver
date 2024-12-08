@@ -28,6 +28,8 @@
           TZ: Europe/Berlin
           NTFY_BASE_URL: "https://{{ ntfy_http_subdomain }}.{{ homeserver_domain }}"
           NTFY_CACHE_FILE: /var/cache/ntfy/cache.db
+          NTFY_CACHE_DURATION: "62d"
+          NTFY_ATTACHMENT_EXPIRY_DURATION: "62d"
           NTFY_AUTH_FILE: /etc/ntfy/auth.db
           NTFY_AUTH_DEFAULT_ACCESS: deny-all
           NTFY_BEHIND_PROXY: "true"
