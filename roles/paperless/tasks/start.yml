@@ -21,6 +21,18 @@
         - "{{ paperless_data_export }}"
         - "{{ paperless_data_media }}"
         - "{{ paperless_data_consume }}"
+        - "{{ paperless_data_scripts }}"
+
+    - name: Install pre-/post-consumption scripts
+      ansible.builtin.template:
+        src: "{{ item }}"
+        dest: "{{ paperless_data_scripts }}/{{ item }}"
+        mode: "u+x"
+        owner: 1000
+        group: 1000
+      with_items:
+        - "paperless-pre-consumption"
+        - "paperless-post-consumption"
 
     - name: Create bridge network
       community.docker.docker_network:
@@ -75,6 +87,8 @@
           - "{{ paperless_data_media }}:/usr/src/paperless/media"
           - "{{ paperless_data_export }}:/usr/src/paperless/export"
           - "{{ paperless_data_consume }}:/usr/src/paperless/consume"
+          - "{{ paperless_data_scripts }}/paperless-pre-consumption:/usr/local/bin/paperless-pre-consumption:ro"
+          - "{{ paperless_data_scripts }}/paperless-post-consumption:/usr/local/bin/paperless-post-consumption:ro"
         env:
           PAPERLESS_REDIS: "redis://{{ paperless_redis_container_name }}"
           PAPERLESS_DBHOST: "{{ paperless_db_container_name }}"
@@ -91,5 +105,7 @@
           PAPERLESS_APPS: "allauth.socialaccount.providers.openid_connect"
           PAPERLESS_SOCIAL_PROVIDERS: "{{ paperless_social_providers }}"
           PAPERLESS_SOCIALACCOUNT_PROVIDERS: "{{ paperless_socialaccount_providers | tojson | string }}"
+          PAPERLESS_PRE_CONSUME_SCRIPT: "/usr/local/bin/paperless-pre-consumption"
+          PAPERLESS_POST_CONSUME_SCRIPT: "/usr/local/bin/paperless-post-consumption"
   tags:
     - paperless-start

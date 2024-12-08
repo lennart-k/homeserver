@@ -18,6 +18,7 @@ paperless_data_media: "{{ paperless_data }}/media"
 paperless_data_export: "{{ paperless_data }}/export"
 paperless_data_consume: "{{ paperless_data }}/consume"
 paperless_data_redis: "{{ paperless_data }}/redis"
+paperless_data_scripts: "{{ paperless_data }}/scripts"
 # paperless_data_env_file: "{{ paperless_data }}/env_file"
 
 paperless_network_bridge: paperless_bridge
