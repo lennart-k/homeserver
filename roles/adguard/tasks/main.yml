@@ -17,17 +17,13 @@
         labels:
           traefik.enable: "true"
           http.subdomain: "{{ adguard_http_subdomain }}"
-          traefik.http.routers.adguard.entrypoints: "{{ traefik_http_entrypoint }}"
+          traefik.http.routers.adguard.entrypoints: "{{ adguard_http_entrypoints }}"
           traefik.http.services.adguard.loadbalancer.server.port: "3000"
           traefik.http.services.adguard.loadbalancer.healthcheck.path: /
-          homepage.group: Admin
-          homepage.name: AdGuard
-          homepage.icon: adguard-home
-          homepage.href: "https://{{ adguard_http_subdomain }}.{{ homeserver_domain }}"
         expose: [3000]
         ports:
-          - 53:53/tcp  # plain DNS
-          - 53:53/udp  # plain DNS
+          - 53:53/tcp # plain DNS
+          - 53:53/udp # plain DNS
         restart_policy: unless-stopped
         networks:
           - name: "{{ homeserver_services_network }}"

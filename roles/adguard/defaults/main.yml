@@ -6,4 +6,5 @@ adguard_data: "{{ homeserver_data }}/adguard"
 adguard_data_data: "{{ adguard_data }}/data"
 adguard_data_config: "{{ adguard_data }}/config"
 
-adguard_http_subdomain: adguard.internal
+adguard_http_entrypoints: "{{ traefik_http_entrypoint }}"
+adguard_http_subdomain: adguard
