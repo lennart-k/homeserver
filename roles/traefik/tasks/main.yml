@@ -10,7 +10,7 @@
         - "{{ traefik_data_config }}"
         - "{{ traefik_data_config }}/dynamic"
         - "{{ traefik_data_logs }}"
-    
+
     - name: Install traefik.yml
       ansible.builtin.template:
         src: traefik.yml
@@ -28,11 +28,19 @@
           - 1.0.0.1
         env: "{{ traefik_env }}"
         ports:
-          - 80:80/tcp
-          - 443:443/tcp
-          - 443:443/udp
-          - 8443:8443/tcp
-          - 8443:8443/udp
+          - 0.0.0.0:80:80/tcp
+          - 0.0.0.0:443:443/tcp
+          - 0.0.0.0:443:443/udp
+          - 0.0.0.0:8443:8443/tcp
+          - 0.0.0.0:8443:8443/udp
+          - 0.0.0.0:853:853/tcp # DNS over TLS
+
+          - "[::]:80:80/tcp"
+          - "[::]:443:443/tcp"
+          - "[::]:443:443/udp"
+          - "[::]:8443:8443/tcp"
+          - "[::]:8443:8443/udp"
+          - "[::]:853:853/tcp" # DNS over TLS
         pull: true
         expose: [80]
         restart_policy: unless-stopped
