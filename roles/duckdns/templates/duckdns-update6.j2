@@ -1,5 +1,6 @@
 #!/bin/sh
 # Installed via Ansible playbook
-IP=$(ip -6 addr show | grep "scope global dynamic" | awk '{print $2}' | rev | cut -c 4- | rev)
+# TODO:Make the filter configurable or simply use first IPv6?
+IP=$(ip -6 addr ls dev eno1 scope global primary | awk '/inet6 2001/{split($2,a,"/"); print a[1]}')
 echo $IP
 curl "https://www.duckdns.org/update?token={{ duckdns_token }}&ipv6=$IP&domains={{ duckdns_domains | join(',') }}&verbose=true"
