@@ -1,0 +1,10 @@
+mealie_container_name: mealie
+mealie_image_name: ghcr.io/mealie-recipes/mealie
+mealie_image_version: latest
+
+mealie_data: "{{ homeserver_data }}/mealie"
+
+mealie_http_subdomain: mealie
+# set this
+# mealie_oidc_client_id: ""
+# mealie_oidc_client_secret: ""

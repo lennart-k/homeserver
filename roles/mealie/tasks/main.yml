@@ -1,0 +1,49 @@
+- name: Start Mealie
+  block:
+    - name: Create directory
+      ansible.builtin.file:
+        path: "{{ mealie_data }}"
+        state: directory
+        recurse: true
+
+    - name: Start mealie container
+      community.docker.docker_container:
+        name: "{{ mealie_container_name }}"
+        image: "{{ mealie_image_name }}:{{ mealie_image_version }}"
+        pull: true
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ mealie_http_subdomain }}"
+          traefik.http.routers.mealie.entrypoints: "{{ traefik_http_entrypoint }}"
+        expose: [9000]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ homeserver_services_network }}"
+        env:
+          TZ: Europe/Berlin
+          ALLOW_SIGNUP: "False"
+          PUID: "1000"
+          PGID: "1000"
+          BASE_URL: "https://{{ mealie_http_subdomain }}.{{ homeserver_domain }}"
+          OIDC_AUTH_ENABLED: "True"
+          OIDC_CONFIGURATION_URL: "https://{{ authelia_http_subdomain }}.{{ homeserver_domain }}/.well-known/openid-configuration"
+          OIDC_CLIENT_ID: "{{ mealie_oidc_client_id }}"
+          OIDC_CLIENT_SECRET: "{{ mealie_oidc_client_secret  }}"
+          # OIDC_USER_GROUP: ""
+          OIDC_ADMIN_GROUP: "admins"
+          OIDC_AUTO_REDIRECT: "True" # maybe set false?
+          OIDC_PROVIDER_NAME: "Authelia"
+          OIDC_USER_CLAIM: "preferred_username"
+        volumes:
+          - "{{ mealie_data }}:/app/data"
+  tags:
+    - mealie-start
+
+- name: Stop mealie
+  community.docker.docker_container:
+    name: "{{ mealie_container_name }}"
+    state: absent
+  tags:
+    - mealie-stop
+    - stop
+    - never
