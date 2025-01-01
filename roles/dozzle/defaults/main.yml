@@ -1,5 +1,5 @@
 dozzle_container_name: dozzle
-dozzle_image_name: amir20/dozzle
+dozzle_image_name: ghcr.io/amir20/dozzle
 dozzle_image_version: latest
 
 dozzle_http_subdomain: dozzle
