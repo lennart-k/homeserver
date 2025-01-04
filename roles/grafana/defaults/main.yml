@@ -2,6 +2,13 @@ grafana_container_name: grafana
 grafana_image_name: grafana/grafana
 grafana_image_version: latest
 
+grafana_ntfy_container_name: grafana-ntfy
+grafana_ntfy_image_name: kittyandrew/grafana-to-ntfy
+grafana_ntfy_image_version: latest
+
+grafana_ntfy_topic: grafana
+# grafana_nfty_token: todo
+
 grafana_data: "{{ homeserver_data }}/grafana"
 grafana_data_data: "{{ grafana_data }}/data"
 grafana_data_config: "{{ grafana_data }}/config"

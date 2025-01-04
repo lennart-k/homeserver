@@ -25,10 +25,6 @@
           traefik.enable: "true"
           http.subdomain: "{{ grafana_http_subdomain }}"
           traefik.http.routers.grafana.entrypoints: "{{ grafana_http_entrypoints }}"
-          homepage.group: Admin
-          homepage.name: Grafana
-          homepage.icon: grafana
-          homepage.href: "https://{{ grafana_http_subdomain }}.{{ homeserver_domain }}"
         expose: [3000]
         restart_policy: unless-stopped
         networks:
@@ -38,9 +34,24 @@
         volumes:
           - "{{ grafana_data_data }}:/var/lib/grafana"
           - "{{ grafana_data_config }}:/etc/grafana"
+
+    - name: Start grafana ntfy bridge container
+      community.docker.docker_container:
+        name: "{{ grafana_ntfy_container_name }}"
+        image: "{{ grafana_ntfy_image_name }}:{{ grafana_ntfy_image_version }}"
+        pull: true
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ homeserver_services_network }}"
+        env:
+          TZ: Europe/Berlin
+          NTFY_URL: "http://{{ ntfy_container_name }}/{{ grafana_ntfy_topic }}"
+          NTFY_BAUTH_USER: ""
+          NTFY_BAUTH_PASS: "{{ grafana_ntfy_token }}"
+          BAUTH_USER: grafana
+          BAUTH_PASS: grafana
   tags:
     - grafana-start
-
 - name: Stop Grafana
   community.docker.docker_container:
     name: "{{ grafana_container_name }}"
