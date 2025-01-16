@@ -30,7 +30,7 @@
           OIDC_CLIENT_ID: "{{ mealie_oidc_client_id }}"
           OIDC_CLIENT_SECRET: "{{ mealie_oidc_client_secret  }}"
           # OIDC_USER_GROUP: ""
-          OIDC_ADMIN_GROUP: "admins"
+          OIDC_ADMIN_GROUP: "admin"
           OIDC_AUTO_REDIRECT: "True" # maybe set false?
           OIDC_PROVIDER_NAME: "Authelia"
           OIDC_USER_CLAIM: "preferred_username"
