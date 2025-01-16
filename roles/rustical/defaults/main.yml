@@ -1,0 +1,7 @@
+rustical_container_name: rustical
+rustical_image_name: ghcr.io/lennart-k/rustical
+rustical_image_version: main
+
+rustical_data: "{{ homeserver_data }}/rustical"
+
+rustical_http_subdomain: rustical

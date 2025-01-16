@@ -1,0 +1,37 @@
+- name: Start rustical
+  block:
+    - name: Create directory
+      ansible.builtin.file:
+        path: "{{ rustical_data }}"
+        state: directory
+        recurse: true
+
+    - name: Start rustical container
+      community.docker.docker_container:
+        name: "{{ rustical_container_name }}"
+        image: "{{ rustical_image_name }}:{{ rustical_image_version }}"
+        pull: true
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ rustical_http_subdomain }}"
+          traefik.http.routers.rustical.entrypoints: "{{ traefik_http_entrypoint }}"
+        expose: [4000]
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ homeserver_services_network }}"
+        env:
+          TZ: Europe/Berlin
+        volumes:
+          - "{{ rustical_data }}:/var/lib/rustical"
+          - "{{ rustical_data }}/config.toml:/etc/rustical/config.toml:ro"
+  tags:
+    - rustical-start
+
+- name: Stop rustical
+  community.docker.docker_container:
+    name: "{{ rustical_container_name }}"
+    state: absent
+  tags:
+    - rustical-stop
+    - stop
+    - never
