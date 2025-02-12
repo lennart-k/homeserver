@@ -21,9 +21,14 @@
           - name: "{{ homeserver_services_network }}"
         env:
           TZ: Europe/Berlin
+          RUSTICAL_DATA_STORE__SQLITE__DB_URL: /var/lib/rustical/db.sqlite3
+          RUSTICAL_AUTH__TOML__PATH: /etc/rustical/principals.toml
+          RUSTICAL_FRONTEND__ENABLED: "false"
+          RUSTICAL_FRONTEND__SECRET_KEY: "{{ rustical_frontend_secret }}"
+          RUSTICAL_DAV_PUSH__ALLOWED_PUSH_SERVERS: "{{ rustical_davpush_allowed_servers | to_json }}"
         volumes:
           - "{{ rustical_data }}:/var/lib/rustical"
-          - "{{ rustical_data }}/config.toml:/etc/rustical/config.toml:ro"
+          - "{{ rustical_data }}:/etc/rustical/"
   tags:
     - rustical-start
 

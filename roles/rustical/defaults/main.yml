@@ -4,4 +4,7 @@ rustical_image_version: main
 
 rustical_data: "{{ homeserver_data }}/rustical"
 
+# rustical_frontend_secret: "todo"
+rustical_davpush_allowed_servers: []
+
 rustical_http_subdomain: rustical
