@@ -7,4 +7,7 @@ rustical_data: "{{ homeserver_data }}/rustical"
 # rustical_frontend_secret: "todo"
 rustical_davpush_allowed_servers: []
 
+# rustical_oidc_client_id: "todo"
+# rustical_oidc_client_secret: "todo"
+
 rustical_http_subdomain: rustical

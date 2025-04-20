@@ -23,8 +23,19 @@
           TZ: Europe/Berlin
           RUSTICAL_DATA_STORE__SQLITE__DB_URL: /var/lib/rustical/db.sqlite3
           RUSTICAL_AUTH__TOML__PATH: /etc/rustical/principals.toml
-          RUSTICAL_FRONTEND__ENABLED: "false"
+
+          RUSTICAL_FRONTEND__ENABLED: "true"
           RUSTICAL_FRONTEND__SECRET_KEY: "{{ rustical_frontend_secret }}"
+          RUSTICAL_FRONTEND__ALLOW_PASSWORD_LOGIN: "false"
+          RUSTICAL_OIDC__NAME: "Authelia"
+          RUSTICAL_OIDC__ISSUER: "https://{{ authelia_http_subdomain }}.{{ homeserver_domain }}"
+          RUSTICAL_OIDC__CLIENT_ID: "{{ rustical_oidc_client_id }}"
+          RUSTICAL_OIDC__CLIENT_SECRET: "{{ rustical_oidc_client_secret }}"
+          RUSTICAL_OIDC__CLAIM_USERID: "preferred_username"
+          RUSTICAL_OIDC__SCOPES: '["openid", "profile", "groups"]'
+          RUSTICAL_OIDC__REQUIRE_GROUP: "app:rustical"
+          RUSTICAL_OIDC__ALLOW_SIGN_UP: "false"
+
           RUSTICAL_DAV_PUSH__ALLOWED_PUSH_SERVERS: "{{ rustical_davpush_allowed_servers | to_json }}"
         volumes:
           - "{{ rustical_data }}:/var/lib/rustical"
