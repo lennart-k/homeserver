@@ -2,7 +2,8 @@ tandoor_data: "{{ homeserver_data }}/tandoor"
 
 tandoor_web_container_name: tandoor-web
 tandoor_web_image_name: vabene1111/recipes
-tandoor_web_image_version: latest
+# tandoor_web_image_version: latest
+tandoor_web_image_version: feature-vue3
 
 tandoor_nginx_container_name: tandoor-nginx
 tandoor_nginx_image_name: nginx
@@ -24,5 +25,5 @@ tandoor_http_subdomain: recipes
 tandoor_enable_metrics: false
 tandoor_postgres_password: super_secret_password that you need to change!
 tandoor_secret_key: super_secret_key that you need to change!
-tandoor_social_providers: ''
+tandoor_social_providers: ""
 tandoor_socialaccount_providers: {}
