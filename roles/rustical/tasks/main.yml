@@ -21,9 +21,6 @@
           - name: "{{ homeserver_services_network }}"
         env:
           TZ: Europe/Berlin
-          RUSTICAL_DATA_STORE__SQLITE__DB_URL: /var/lib/rustical/db.sqlite3
-
-          RUSTICAL_FRONTEND__SECRET_KEY: "{{ rustical_frontend_secret }}"
           RUSTICAL_FRONTEND__ALLOW_PASSWORD_LOGIN: "false"
           RUSTICAL_OIDC__NAME: "Authelia"
           RUSTICAL_OIDC__ISSUER: "https://{{ authelia_http_subdomain }}.{{ homeserver_domain }}"

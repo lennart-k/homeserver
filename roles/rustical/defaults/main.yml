@@ -1,6 +1,6 @@
 rustical_container_name: rustical
 rustical_image_name: ghcr.io/lennart-k/rustical
-rustical_image_version: main
+rustical_image_version: latest
 
 rustical_data: "{{ homeserver_data }}/rustical"
 
