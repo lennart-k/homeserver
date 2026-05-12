@@ -7,7 +7,10 @@ server {
     add_header Access-Control-Allow-Origin  *;
     return 200 '
       {
-        "m.homeserver": {"base_url": "https://{{ matrix_http_subdomain }}.{{ homeserver_domain }}"},
+        "m.homeserver": {
+          "base_url": "https://{{ matrix_http_subdomain }}.{{ homeserver_domain }}"
+        },
+        "org.matrix.msc4143.rtc_foci": [{"type":"livekit","livekit_service_url":"https://{{ matrix_livekit_host }}"}],
         "org.matrix.msc2965.authentication": {
           "issuer": "https://{{ matrix_http_mas_subdomain }}.{{ homeserver_domain }}/",
           "account": "https://{{ matrix_http_mas_subdomain }}.{{ homeserver_domain }}/account"
