@@ -9,7 +9,6 @@
         name: "{{ item }}"
         state: absent
       loop:
-        - "{{ tandoor_nginx_container_name }}"
         - "{{ tandoor_web_container_name }}"
         - "{{ tandoor_db_container_name }}"
 
