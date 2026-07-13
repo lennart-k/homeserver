@@ -7,8 +7,8 @@ immich_redis_image_version: "6.2"
 
 # persistent data
 immich_db_container_name: immich-db
-immich_db_image_name: tensorchord/pgvecto-rs
-immich_db_image_version: pg14-v0.2.0
+immich_db_image_name: ghcr.io/immich-app/postgres
+immich_db_image_version: 14-vectorchord0.3.0-pgvectors0.2.0
 
 # Run Machine Learning models
 immich_ml_container_name: immich-machine_learning
@@ -35,6 +35,7 @@ immich_db_database: immich # server, microservices
 
 immich_data: "{{ homeserver_data }}/immich"
 immich_data_upload: "{{ immich_data }}/library"
+immich_data_thumbnails: "{{ immich_data }}/thumbnails"
 immich_data_db: "{{ immich_data }}/db"
 immich_data_redis: "{{ immich_data }}/redis"
 immich_data_ml_cache: "{{ immich_data }}/ml_cache"

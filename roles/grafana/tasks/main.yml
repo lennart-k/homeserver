@@ -50,6 +50,7 @@
           NTFY_BAUTH_PASS: "{{ grafana_ntfy_token }}"
           BAUTH_USER: grafana
           BAUTH_PASS: grafana
+          MARKDOWN: "true"
   tags:
     - grafana-start
 - name: Stop Grafana

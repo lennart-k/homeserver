@@ -1,0 +1,144 @@
+- name: Stop opencloud
+  community.docker.docker_container:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ opencloud_container_name }}"
+  tags:
+    - opencloud-stop
+    - stop
+    - never
+
+- name: Start opencloud
+  block:
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        recurse: true
+        owner: 1000
+        group: 1000
+      with_items:
+        - "{{ opencloud_data_config }}"
+        - "{{ opencloud_data_data }}"
+
+    - name: Start OpenCloud container
+      community.docker.docker_container:
+        name: "{{ opencloud_container_name }}"
+        image: "{{ opencloud_image_name }}:{{ opencloud_image_version }}"
+        pull: true
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ opencloud_http_subdomain }}"
+          traefik.http.routers.opencloud.entrypoints: "{{ opencloud_http_entrypoints }}"
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ homeserver_services_network }}"
+        env:
+          # enable services that are not started automatically
+          # OC_ADD_RUN_SERVICES: notifications
+          OC_DOMAIN: "{{ opencloud_http_subdomain }}.{{ homeserver_domain }}"
+          OC_URL: https://{{ opencloud_http_subdomain }}.{{ homeserver_domain }}
+          OC_LOG_LEVEL: warn
+          OC_LOG_COLOR: "true"
+          OC_LOG_PRETTY: "true"
+          OC_INSECURE: "false"
+          PROXY_TLS: "false"
+
+          GATEWAY_GRPC_ADDR: 0.0.0.0:9142
+
+          # Authelia IdP
+          OC_OIDC_ISSUER: "https://{{ authelia_http_subdomain}}.{{ homeserver_domain }}"
+          OC_OIDC_CLIENT_ID: opencloud
+          WEB_OIDC_SCOPE: "openid profile email groups"
+          OC_EXCLUDE_RUN_SERVICES: "idp"
+
+          PROXY_OIDC_REWRITE_WELLKNOWN: "true"
+          PROXY_OIDC_ACCESS_TOKEN_VERIFY_METHOD: none
+          PROXY_USER_OIDC_CLAIM: preferred_username
+          PROXY_USER_CS3_CLAIM: username
+          PROXY_AUTOPROVISION_ACCOUNTS: "true"
+          GRAPH_USERNAME_MATCH: "none"
+          GRAPH_ASSIGN_DEFAULT_USER_ROLE: "false"
+          PROXY_CSP_CONFIG_FILE_LOCATION: /etc/opencloud/csp.yaml
+
+          OC_SHARING_PUBLIC_SHARE_MUST_HAVE_PASSWORD: "false"
+
+          MICRO_REGISTRY_ADDRESS: 127.0.0.1:9233
+          NATS_NATS_HOST: 0.0.0.0
+          NATS_NATS_PORT: "9233"
+
+          COLLABORA_DOMAIN: "https://collabora.{{ homeserver_domain }}"
+        volumes:
+          - "{{ opencloud_data_config }}:/etc/opencloud"
+          - "{{ opencloud_data_data }}:/var/lib/opencloud"
+
+    - name: Start WOPI container
+      community.docker.docker_container:
+        name: "{{ opencloud_container_name }}-wopi"
+        image: "{{ opencloud_image_name }}:{{ opencloud_image_version }}"
+        pull: true
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ opencloud_http_subdomain }}-wopi"
+          traefik.http.routers.opencloud-wopi.entrypoints: "{{ opencloud_http_entrypoints }}"
+          traefik.http.services.opencloud-wopi.loadbalancer.server.port: "9300"
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ homeserver_services_network }}"
+        entrypoint: ["/bin/sh"]
+        command: ["-c", "opencloud collaboration server"]
+        env:
+          OC_DOMAIN: "{{ opencloud_http_subdomain }}.{{ homeserver_domain }}"
+          OC_URL: https://{{ opencloud_http_subdomain }}.{{ homeserver_domain }}
+          OC_LOG_LEVEL: info
+          OC_LOG_COLOR: "true"
+          OC_LOG_PRETTY: "true"
+          OC_INSECURE: "false"
+
+          COLLABORATION_GRPC_ADDR: 0.0.0.0:9301
+          COLLABORATION_HTTP_ADDR: 0.0.0.0:9300
+          MICRO_REGISTRY: "nats-js-kv"
+          MICRO_REGISTRY_ADDRESS: "{{ opencloud_container_name }}:9233"
+        volumes:
+          - "{{ opencloud_data_config }}:/etc/opencloud"
+
+    - name: Start Collabora container
+      community.docker.docker_container:
+        name: "{{ opencloud_container_name }}-collabora"
+        image: "collabora/code"
+        pull: true
+        labels:
+          traefik.enable: "true"
+          http.subdomain: "{{ opencloud_http_subdomain }}-collabora"
+          traefik.http.routers.opencloud-collabora.entrypoints: "{{ opencloud_http_entrypoints }}"
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ homeserver_services_network }}"
+        env:
+          aliasgroup1: https://{{ opencloud_http_subdomain }}-wopi.{{ homeserver_domain }}
+          DONT_GEN_SSL_CERT: "YES"
+          extra_params: |
+            --o:ssl.enable=false \
+            --o:ssl.termination=true \
+            --o:welcome.enable=false \
+            --o:net.content_security_policy frame-ancestors {{ opencloud_http_subdomain }}.{{ homeserver_domain }} \
+            --o:home_mode.enable=false \
+            --o:user_interface.mode=compact
+          username: admin
+          password: aw83znrcilaez4tvzilt7ziLIN,ageh
+        capabilities: [MKNOD]
+        volumes:
+          # Mount local TrueType fonts so the container can use system fonts
+          # (e.g. Microsoft fonts like Arial, Calibri, Cambria by installing the `ttf-mscorefonts-installer` package).
+          - /usr/share/fonts/truetype:/usr/share/fonts/truetype/more:ro
+          - /usr/share/fonts/truetype:/opt/cool/systemplate/usr/share/fonts/truetype/more:ro
+        entrypoint: ["/bin/bash", "-c"]
+        command: ["coolconfig generate-proof-key && /start-collabora-online.sh"]
+        healthcheck:
+          test: ["CMD", "curl", "-f", "http://localhost:9980/hosting/discovery"]
+          interval: 15s
+          timeout: 10s
+          retries: 5
+  tags:
+    - opencloud-start

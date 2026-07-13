@@ -7,6 +7,7 @@
         recurse: true
       loop:
         - "{{ immich_data_upload }}"
+        - "{{ immich_data_thumbnails }}"
         - "{{ immich_data_db }}"
         - "{{ immich_data_redis }}"
         - "{{ immich_data_ml_cache }}"
@@ -44,6 +45,7 @@
           POSTGRES_USER: "{{ immich_db_username }}"
           POSTGRES_PASSWORD: "{{ immich_db_password }}"
           POSTGRES_DB: "{{ immich_db_database }}"
+          DB_STORAGE_TYPE: HDD
         restart_policy: unless-stopped
         volumes:
           - "{{ immich_data_db }}:/var/lib/postgresql/data"

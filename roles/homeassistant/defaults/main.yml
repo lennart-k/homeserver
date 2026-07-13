@@ -33,6 +33,7 @@ homeassistant_db_name: homeassistant
 homeassistant_data: "{{ homeserver_data }}/homeassistant"
 homeassistant_data_db: "{{ homeassistant_data }}/db"
 homeassistant_data_config: "{{ homeassistant_data }}/config"
+homeassistant_data_matter: "{{ homeassistant_data }}/matter"
 homeassistant_data_tts: "{{ homeassistant_data }}/tts"
 homeassistant_data_whisper: "{{ homeassistant_data }}/whisper"
 

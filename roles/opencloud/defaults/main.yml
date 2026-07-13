@@ -1,0 +1,11 @@
+opencloud_data: "{{ homeserver_data }}/opencloud"
+
+opencloud_container_name: opencloud
+opencloud_image_name: opencloudeu/opencloud-rolling
+opencloud_image_version: latest
+
+opencloud_http_subdomain: opencloud
+opencloud_http_entrypoints: "{{ traefik_http_entrypoint }}"
+
+opencloud_data_config: "{{ opencloud_data }}/config"
+opencloud_data_data: "{{ opencloud_data }}/data"

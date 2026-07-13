@@ -1,3 +1,27 @@
+- name: Stop Home Assistant
+  block:
+    - name: Stop containers
+      community.docker.docker_container:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ homeassistant_container_name }}"
+        - "{{ homeassistant_db_container_name }}"
+        - homeassistant-matter
+        # - "{{ homeassistant_tts_container_name }}"
+        # - "{{ homeassistant_whisper_container_name }}"
+        # - "{{ homeassistant_wol_container_name }}"
+
+    - name: Remove bridge network
+      community.docker.docker_network:
+        name: "{{ homeassistant_network_bridge }}"
+        state: absent
+
+  tags:
+    - homeassistant-stop
+    - stop
+    - never
+
 - name: Start Home Assistant
   block:
     - name: Create directories
@@ -8,12 +32,17 @@
       loop:
         - "{{ homeassistant_data_db }}"
         - "{{ homeassistant_data_config }}"
+        - "{{ homeassistant_data_matter }}"
 
     - name: Create bridge network
       community.docker.docker_network:
         name: "{{ homeassistant_network_bridge }}"
         driver_options:
           com.docker.network.bridge.name: "{{ homeassistant_network_bridge }}"
+        ipam_config:
+          - iprange: 172.154.0.0/24
+            subnet: 172.154.0.0/24
+            gateway: 172.154.0.1
         driver: bridge
         state: present
 
@@ -31,42 +60,59 @@
           - "{{ homeassistant_data_db }}:/var/lib/postgresql/data"
         networks:
           - name: "{{ homeassistant_network_bridge }}"
+            ipv4_address: 172.154.0.3
 
-    - name: Start wyoming-piper (TTS) container
+    - name: Start Matter server
       community.docker.docker_container:
-        name: "{{ homeassistant_tts_container_name }}"
-        image: "{{ homeassistant_tts_image_name }}:{{ homeassistant_tts_image_version }}"
-        command: "--voice {{ homeassistant_tts_voice }}"
+        name: homeassistant-matter
+        image: ghcr.io/matter-js/python-matter-server:stable
         pull: true
-        expose: [10200]
+        network_mode: host
+        privileged: true
+        security_opts:
+          - apparmor:unconfined
         restart_policy: unless-stopped
-        networks:
-          - name: "{{ homeassistant_network_bridge }}"
         volumes:
-          - "{{ homeassistant_data_tts }}:/data"
+          - "{{ homeassistant_data_matter }}:/data/"
+          - /run/dbus:/run/dbus:ro # For bluetooth
+          - /etc/localtime:/etc/localtime:ro
+        command: --storage-path /data --paa-root-cert-dir /data/credentials --bluetooth-adapter 0
 
-    - name: Start wyoming-whisper (speech-to-text) container
-      community.docker.docker_container:
-        name: "{{ homeassistant_whisper_container_name }}"
-        image: "{{ homeassistant_whisper_image_name }}:{{ homeassistant_whisper_image_version }}"
-        command: "--model {{ homeassistant_whisper_model }} --language {{ homeassistant_whisper_language }}"
-        pull: true
-        expose: [10300]
-        restart_policy: unless-stopped
-        networks:
-          - name: "{{ homeassistant_network_bridge }}"
-        volumes:
-          - "{{ homeassistant_data_whisper }}:/data"
-
-    - name: Start WOL forwarding container
-      community.docker.docker_container:
-        name: "{{ homeassistant_wol_container_name }}"
-        image: "{{ homeassistant_wol_image_name }}:{{ homeassistant_wol_image_version }}"
-        command: "-dd UDP4-RECV:9999,range={{ homeassistant_wol_range }} UDP-SENDTO:{{ homeassistant_wol_broadcast }}:9,broadcast"
-        pull: true
-        restart_policy: unless-stopped
-        networks:
-          - name: host
+    # - name: Start wyoming-piper (TTS) container
+    #   community.docker.docker_container:
+    #     name: "{{ homeassistant_tts_container_name }}"
+    #     image: "{{ homeassistant_tts_image_name }}:{{ homeassistant_tts_image_version }}"
+    #     command: "--voice {{ homeassistant_tts_voice }}"
+    #     pull: true
+    #     expose: [10200]
+    #     restart_policy: unless-stopped
+    #     networks:
+    #       - name: "{{ homeassistant_network_bridge }}"
+    #     volumes:
+    #       - "{{ homeassistant_data_tts }}:/data"
+    #
+    # - name: Start wyoming-whisper (speech-to-text) container
+    #   community.docker.docker_container:
+    #     name: "{{ homeassistant_whisper_container_name }}"
+    #     image: "{{ homeassistant_whisper_image_name }}:{{ homeassistant_whisper_image_version }}"
+    #     command: "--model {{ homeassistant_whisper_model }} --language {{ homeassistant_whisper_language }}"
+    #     pull: true
+    #     expose: [10300]
+    #     restart_policy: unless-stopped
+    #     networks:
+    #       - name: "{{ homeassistant_network_bridge }}"
+    #     volumes:
+    #       - "{{ homeassistant_data_whisper }}:/data"
+    #
+    # - name: Start WOL forwarding container
+    #   community.docker.docker_container:
+    #     name: "{{ homeassistant_wol_container_name }}"
+    #     image: "{{ homeassistant_wol_image_name }}:{{ homeassistant_wol_image_version }}"
+    #     command: "-dd UDP4-RECV:9999,range={{ homeassistant_wol_range }} UDP-SENDTO:{{ homeassistant_wol_broadcast }}:9,broadcast"
+    #     pull: true
+    #     restart_policy: unless-stopped
+    #     networks:
+    #       - name: host
 
     - name: Start homeassistant container
       community.docker.docker_container:
@@ -75,19 +121,21 @@
         pull: true
         healthcheck:
           test: ["CMD-SHELL", "curl -f http://localhost:8123 || exit 1"]
-        labels:
-          traefik.enable: "true"
-          http.subdomain: "{{ homeassistant_http_subdomain }}"
-          traefik.http.routers.homeassistant.entrypoints: "{{ traefik_http_entrypoint }}"
-          homepage.group: Home Automation
-          homepage.name: Home Assistant
-          homepage.icon: home-assistant
-          homepage.href: "https://{{ homeassistant_http_subdomain }}.{{ homeserver_domain }}"
+        # labels:
+        #   traefik.enable: "true"
+        #   http.subdomain: "{{ homeassistant_http_subdomain }}"
+        #   traefik.http.routers.homeassistant.entrypoints: "{{ traefik_http_entrypoint }}"
+        #   traefik.http.services.homeassistant.loadbalancer.server.hostname: "host.docker.internal"
+        #   traefik.http.services.homeassistant.loadbalancer.server.port: "8123"
         expose: [8123]
         restart_policy: unless-stopped
-        networks:
-          - name: "{{ homeserver_services_network }}"
-          - name: "{{ homeassistant_network_bridge }}"
+        network_mode: host
+        etc_hosts:
+          host.docker.internal: host-gateway
+        # networks:
+        #   - name: "{{ homeserver_services_network }}"
+        #   - name: "{{ homeassistant_network_bridge }}"
+        #   # - name: hass_vlan
         volumes:
           - "{{ homeassistant_data_config }}:/config"
           - /etc/localtime:/etc/localtime:ro
@@ -97,26 +145,3 @@
           - /dev/serial/by-id/pci-Silicon_Labs_slae.sh_cc2652rb_stick_-_slaesh_s_iot_stuff_00_12_4B_00_23_93_23_EB-if00-port0
   tags:
     - homeassistant-start
-
-- name: Stop Home Assistant
-  block:
-    - name: Stop containers
-      community.docker.docker_container:
-        name: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ homeassistant_container_name }}"
-        - "{{ homeassistant_db_container_name }}"
-        - "{{ homeassistant_tts_container_name }}"
-        - "{{ homeassistant_whisper_container_name }}"
-        - "{{ homeassistant_wol_container_name }}"
-
-    - name: Remove bridge network
-      community.docker.docker_network:
-        name: "{{ homeassistant_network_bridge }}"
-        state: absent
-
-  tags:
-    - homeassistant-stop
-    - stop
-    - never

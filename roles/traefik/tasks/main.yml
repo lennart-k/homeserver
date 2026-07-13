@@ -44,6 +44,8 @@
         pull: true
         expose: [80]
         restart_policy: unless-stopped
+        etc_hosts:
+          host.docker.internal: host-gateway
         networks:
           - name: "{{ homeserver_services_network }}"
         volumes:
